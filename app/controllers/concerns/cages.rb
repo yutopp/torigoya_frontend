@@ -27,7 +27,9 @@ module Cages
     include Singleton
 
     def pick(platform = :linux)
-      return TorigoyaKit::Session.new("localhost", 23432)
+      # TODO: fix it
+      return TorigoyaKit::Session.new(Rails.application.secrets.boot_cage_addr,
+                                      Rails.application.secrets.boot_cage_port)
     end
   end
 
