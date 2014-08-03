@@ -43,6 +43,8 @@ gem 'spring',        group: :development
 
 #
 gem 'mongoid', github: 'mongoid/mongoid'
+gem 'mongoid-grid_fs'
+
 gem 'puma'
 gem 'msgpack-rpc'
 gem 'torigoya_kit'
@@ -50,6 +52,13 @@ gem 'torigoya_kit'
 #
 gem 'devise', github: 'plataformatec/devise'
 gem 'cancan', github: 'ryanb/cancan'
+
+#
+gem 'omniauth', github: 'intridea/omniauth'
+gem 'omniauth-github', github: 'intridea/omniauth-github'
+gem 'omniauth-twitter', :github => 'arunagw/omniauth-twitter'
+
+gem 'gon'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
@@ -59,6 +68,17 @@ gem 'cancan', github: 'ryanb/cancan'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
+group :development do
+  gem 'capistrano', '~> 3.1.0'
+  gem 'capistrano3-puma', github: "seuros/capistrano-puma"
+  gem 'capistrano-rails'
+  gem 'capistrano-bundler'
+  gem 'capistrano-rbenv'
+
+  gem 'dotenv-deployment', require: 'dotenv/deployment'
+end
+
+gem 'dotenv-rails'
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
