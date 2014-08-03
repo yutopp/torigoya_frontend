@@ -5,7 +5,9 @@ $grid-float-breakpoint:     768px;
 $navbar-height:             40px;
 $footer_height:             50px;
 
+@import "bootstrap-sprockets";
 @import "bootstrap";
+
 
 // Sticky footer styles
 html {
