@@ -15,3 +15,8 @@ vendor
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
+
+.env
+config/mongoid.yml
+config/deploy.rb
+config/deploy/

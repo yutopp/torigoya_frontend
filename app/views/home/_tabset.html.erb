@@ -1,0 +1,49 @@
+<!-- tab set -->
+<% if @cloned_from_entry_id.nil? %>
+<tabset ng-init="append_ticket()">
+<% else %>
+<tabset ng-init="wait_entry_for_update('<%= @cloned_from_entry_id %>', true, true)">
+<% end %>
+
+    <!-- tab append button -->
+    <li class="sc-add-btn">
+        <button type="button"
+                class="btn btn-primary btn-xs"
+                ng-disabled="is_running"
+                ng-click="append_ticket()">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+    </li>
+    <!-- /tab append button -->
+
+
+    <!-- tab -->
+    <tab ng-repeat="ticket in tickets"
+         active="ticket.ui.is_active_tab"
+         select="change_ticket_tab($index)"
+         class="sc-ticket-tab">
+        <tab-heading tooltip="{{ticket.proc.selected.title}}">
+            <span class="glyphicon glyphicon-file" ng-if="!ticket.is_processing"></span>
+            <img src="/assets/loading.gif" ng-if="ticket.is_processing"></img>
+        </tab-heading>
+
+
+        <!-- tab content -->
+        <div class="tab-pane">
+            <!-- language operation -->
+            <div class="container-fluid has-no-extra-space">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <%= render :partial => "proc_part" %>
+                    </div>
+                    <div class="col-sm-6">
+                        <%= render :partial => "operator_container" %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /tab content -->
+    </tab>
+    <!-- /tab -->
+</tabset>
+<!-- /tabset -->

@@ -1,0 +1,107 @@
+<!--  -->
+<accordion-group is-open="ticket.<%= mode %>.ui.is_open" class="sc-acc"
+                 ng-if="ticket.proc.selected.profile.<%- if mode == 'compile' -%>is_build_required<%- elsif mode == 'link' -%>is_link_independent<%- end -%> === true">
+    <accordion-heading>
+        <div class="row">
+            <div class="col-sm-4">
+                <h6>
+                    <span class="glyphicon glyphicon-chevron-{{ticket.<%= mode %>.ui.is_open ? 'up' : 'down'}}"></span>
+                    <%= mode %> <span class="label"
+                                      ng-class="ticket.<%= mode %>.ui.label_style">
+                        {{ticket.<%= mode %>.ui.label}}
+                    </span>
+                </h6>
+            </div>
+
+            <div class="col-sm-1 text-center">
+                <h6 tooltip="ExitCode" tooltip-append-to-body="true" tooltip-placement="bottom" style="{{ticket.<%= mode %>.exit != 0 ? 'color: red;' : ''}}">
+                    {{ticket.<%= mode %>.exit}}
+                </h6>
+            </div>
+            <div class="col-sm-1 text-center">
+                <h6 tooltip="Signal" tooltip-append-to-body="true" tooltip-placement="bottom">
+                    {{ticket.<%= mode %>.signal == null ? "(none)" : ticket.<%= mode %>.signal}}
+                </h6>
+            </div>
+            <div class="col-sm-3 text-center">
+                <h6 tooltip="CPU" tooltip-append-to-body="true" tooltip-placement="bottom">
+                    {{ticket.<%= mode %>.cpu.toFixed(4)}}<% if mode == 'compile' %>/{{ticket.<%= mode %>.cpu_limit}}<% end %>[sec]
+                </h6>
+            </div>
+            <div class="col-sm-3 text-center">
+                <h6 tooltip="Memory" tooltip-append-to-body="true" tooltip-placement="bottom">
+                    {{mem_dc(ticket.<%= mode %>.memory)}}<% if mode == 'compile' %>/{{mem_dc(ticket.<%= mode %>.memory_limit)}}<% end %>[KB]
+                </h6>
+            </div>
+        </div>
+    </accordion-heading>
+
+    <code class="sc-command-line"
+        <% unless readonly %>
+        <%- if mode == 'compile' -%>
+          ng-click="ticket.<%= mode %>.ui.toggle_option_collapse()"
+          style="cursor: pointer;"
+        <%- end -%>
+        <% end %>
+    >
+        {{make_<%= mode %>_command_line($index, <%= readonly %>)}}
+    </code>
+
+    <% unless readonly %>
+    <% if mode == 'compile' %>
+    <div class="row" ng-if="ticket.<%= mode %>.ui.should_toggle() && ticket.<%= mode %>.ui.is_option_collapsed === true">
+        <div class="col-sm-10">
+            <select ui-select2
+                    id="sc-<%= mode %>-options"
+                    multiple
+                    ng-model="ticket.<%= mode %>.structured_command_line.selected_with_title"
+                    ng-hoge="ticket.<%= mode %>.ui.allowed_structured_command_line"
+                    ng-options="option.title for option in ticket.<%= mode %>.ui.allowed_structured_command_line"
+                    style="width:100%;"
+                    >
+            </select>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.set_default_option()">
+                default
+            </button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.clear_options()">
+                clear
+            </button>
+        </div>
+    </div>
+    <% end %>
+    <% end %>
+
+
+    <div class="row" ng-if="ticket.<%= mode %>.stdout.length>0">
+        <div class="col-sm-12" class="sc-output-layout">
+            <span class="sc-output-t sc-std" ng-hide="ticket.<%= mode %>.ui.tip_stdout">stdout</span>
+            <textarea scroll-glue
+                      ng-model="ticket.<%= mode %>.stdout"
+                      ng-mouseover="ticket.<%= mode %>.ui.tip_stdout=true"
+                      ng-mouseleave="ticket.<%= mode %>.ui.tip_stdout=false"
+                      class="sc-output sc-std"
+                      rows="8"
+                      readonly
+                      wrap="{{ticket.<%= mode %>.ui.wrap}}">{{ticket.<%= mode %>.stdout}}</textarea>
+        </div>
+    </div>
+
+    <div class="row" ng-if="ticket.<%= mode %>.stderr.length>0">
+        <div class="col-sm-12" class="sc-output-layout">
+            <span class="sc-output-t sc-err" ng-hide="ticket.<%= mode %>.ui.tip_stderr">stderr</span>
+            <textarea scroll-glue
+                      ng-model="ticket.<%= mode %>.stderr"
+                      ng-mouseover="ticket.<%= mode %>.ui.tip_stderr=true"
+                      ng-mouseleave="ticket.<%= mode %>.ui.tip_stderr=false"
+                      class="sc-output sc-err"
+                      rows="8"
+                      readonly
+                      wrap="{{ticket.<%= mode %>.ui.wrap}}">{{ticket.<%= mode %>.stderr}}</textarea>
+        </div>
+    </div>
+</accordion-group>
+<!-- / -->

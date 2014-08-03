@@ -1,0 +1,27 @@
+<!-- editor body -->
+<div class="row">
+    <div class="col-sm-12">
+        <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
+
+int main() {
+    for(int i=0; i<1000; ++i) std::cout << i << "\xff" << std::endl;
+}</textarea>
+    </div>
+</div>
+<!-- /editor body -->
+
+<script type="text/javascript">
+    $(function() {
+        sc_setup_editor({
+            height: "280px",
+            extra_key: {
+                "Ctrl-Enter": (function() {
+                    var s = angular.element($("#sc-code-editor-ctrl")).scope();
+                    s.$apply(function () {
+                        s.submit_all();
+                    });
+                })
+            }
+        });
+    });
+</script>

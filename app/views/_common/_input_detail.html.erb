@@ -1,0 +1,157 @@
+<!-- resource -->
+<div class="row">
+    <div class="col-sm-4">
+        <h5>
+            <span class="label"
+                  ng-class="input.ui.label_style">
+                {{input.ui.label}}
+            </span>
+        </h5>
+    </div>
+    <div class="col-sm-1 text-center">
+        <h6 tooltip="ExitCode" tooltip-append-to-body="true" tooltip-placement="bottom" style="{{input.exit != 0 ? 'color: red;' : ''}}">
+            {{input.exit}}
+        </h6>
+    </div>
+    <div class="col-sm-1 text-center">
+        <h6 tooltip="Signal" tooltip-append-to-body="true" tooltip-placement="bottom">
+            {{input.signal == null ? "(none)" : input.signal}}
+        </h6>
+    </div>
+    <div class="col-sm-3 text-center">
+        <h6 tooltip="CPU" tooltip-append-to-body="true" tooltip-placement="bottom">
+            {{input.cpu.toFixed(4)}}/{{input.cpu_limit}}[sec]
+        </h6>
+    </div>
+    <div class="col-sm-3 text-center">
+        <h6 tooltip="Memory" tooltip-append-to-body="true" tooltip-placement="bottom">
+            {{mem_dc(input.memory)}}/{{mem_dc(input.memory_limit)}}[KB]
+        </h6>
+    </div>
+</div>
+<!-- /resource -->
+
+<code class="sc-command-line"
+    <% unless readonly %>
+      ng-click="input.ui.toggle_option_collapse()"
+      style="cursor: pointer;"
+    <% end %>
+>
+    {{make_run_command_line(selected_tab_index, $index, <%= readonly %>)}}
+</code>
+
+
+<% unless readonly %>
+<%# For active page! %>
+<%# command lines %>
+
+<div class="row" ng-if="input.ui.should_toggle() && input.ui.is_option_collapsed === true">
+    <div class="col-sm-10">
+        <select ui-select2
+                multiple
+                ng-model="input.structured_command_line.selected_with_title"
+                ng-hoge="input.ui.allowed_structured_command_line"
+                ng-options="option.title for option in input.ui.allowed_structured_command_line"
+                style="width:100%;"
+                >
+        </select>
+    </div>
+    <div class="col-sm-1">
+        <button class="btn btn-default btn-xs" ng-click="input.set_default_option()">
+            default
+        </button>
+    </div>
+    <div class="col-sm-1">
+        <button class="btn btn-default btn-xs" ng-click="input.clear_options()">
+            clear
+        </button>
+    </div>
+</div>
+
+<div class="row" ng-if="input.ui.is_option_collapsed === true">
+    <div class="col-sm-12">
+        <input type='text'
+               style="width:100%"
+               class="form-control"
+               ng-model="input.command_line"
+               placeholder='runtime command line…'>
+        </input>
+    </div>
+</div>
+
+<% else %>
+<%# For entry page! %>
+
+<div class="row" ng-if="input.command_line.length>0">
+    <div class="col-sm-12">
+        <input type='text'
+               style="width:100%"
+               class="form-control"
+               ng-model="input.command_line"
+               readonly>
+        </input>
+    </div>
+</div>
+<% end %>
+
+
+<%#  %>
+<div class="row" ng-if="input.stdout.length>0">
+    <div class="col-sm-12" class="sc-output-layout">
+        <span class="sc-output-t sc-std" ng-hide="input.ui.tip_stdout">stdout</span>
+        <textarea scroll-glue
+                  ng-model="input.stdout"
+                  ng-mouseover="input.ui.tip_stdout=true"
+                  ng-mouseleave="input.ui.tip_stdout=false"
+                  class="sc-output sc-std"
+                  rows="8"
+                  readonly
+                  wrap="{{input.ui.wrap}}">{{input.stdout}}</textarea>
+    </div>
+</div>
+
+<div class="row" ng-if="input.stderr.length>0">
+    <div class="col-sm-12" class="sc-output-layout">
+        <span class="sc-output-t sc-err" ng-hide="input.ui.tip_stderr">stderr</span>
+        <textarea scroll-glue
+                  ng-model="input.stderr"
+                  ng-mouseover="input.ui.tip_stderr=true"
+                  ng-mouseleave="input.ui.tip_stderr=false"
+                  class="sc-output sc-err"
+                  rows="8"
+                  readonly
+                  wrap="{{input.ui.wrap}}">{{input.stderr}}</textarea>
+    </div>
+</div>
+
+
+<% unless readonly %>
+<%# For active page! %>
+<%# stdin %>
+
+<div class="row">
+    <div class="col-sm-12">
+        <textarea style="width:100%"
+                  class="form-control"
+                  rows='3'
+                  ng-model="input.stdin"
+                  placeholder='stdin…'>
+        </textarea>
+    </div>
+</div>
+
+<% else %>
+<%# For entry page! %>
+
+<div class="row" ng-if="input.stdin>0">
+    <div class="col-sm-12">
+        <textarea style="width:100%"
+                  class="form-control"
+                  rows='3'
+                  ng-model="input.stdin"
+                  readonly>
+        </textarea>
+    </div>
+</div>
+
+<% end %>

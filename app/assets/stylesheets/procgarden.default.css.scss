@@ -1,0 +1,280 @@
+// use bootstrap3
+$grid-columns:              12;
+$grid-gutter-width:         8px;
+$grid-float-breakpoint:     768px;
+$navbar-height:             40px;
+$footer_height:             50px;
+
+@import "bootstrap";
+
+// Sticky footer styles
+html {
+    mergin: 0;
+    padding: 0;
+    position: relative;
+    min-height: 100%;
+}
+body {
+    mergin: 0;
+    padding: 0;
+
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+
+// bootstrap
+.sc-top-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    height: inherit;
+}
+
+.row {
+    margin: 0;
+    padding: 0;
+}
+
+.sc-lang-op-row {
+    margin-bottom: 4px;
+}
+
+// procgarden
+.main-container {
+    padding: ($navbar-height + 4px) 0 ($footer_height + 4px) 0;
+    margin: 0;
+    min-height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.has-no-extra-space {
+    margin: 0;
+    padding: 1px;
+}
+
+.has-no-extra-space0 {
+    margin: 0;
+    padding: 0;
+}
+
+// Set the fixed height of the footer here
+#footer {
+    position: absolute;
+    bottom: 0;
+    padding: 0;
+    width: 100%;
+    // Set the fixed height of the footer here
+    height: ($footer_height);
+    background-color: #f5f5f5;
+}
+
+#footer > .container-fluid {
+    position: relative;
+}
+
+
+//////////////////////////////////////////////////
+//
+.navbar .navbar-brand {
+  color: #ffffff;
+}
+
+
+//////////////////////////////////////////////////
+//
+.sc-button-option {
+    position: absolute;
+    top: -10px;
+    right: 0;
+    height: 10px;
+}
+
+
+//////////////////////////////////////////////////
+// For ticket tabs
+.nav-tabs > li.sc-ticket-tab {
+}
+
+.nav-tabs > li.sc-ticket-tab > a {
+    padding-top: 0.3em;
+    height: 2em;
+}
+
+// ticket append button
+.sc-add-btn {
+    margin: 2px;
+}
+
+
+//////////////////////////////////////////////////
+// For panel
+.sc-acc panel.panel-default {
+}
+
+.sc-acc .panel-heading {
+    margin: -5px -5px -3px -5px;
+    padding: 0 0 0 10px;
+    padding-left: 10px;
+}
+
+.sc-acc .panel-heading h5 {
+    margin: 4px 4px;
+}
+
+.sc-acc .panel-body {
+    padding: 0px;
+}
+
+
+.sc-acc .sc-command-line {
+    margin-bottom: -4px;
+    display: inline-block;
+    width: 100%;
+    overflow-x: auto;
+}
+
+
+////////////////////////////////////////
+// For nputs tabs
+.nav-tabs > li.sc-ticket-input-tab > a {
+    padding-top: 0.3em;
+    height: 2em;
+}
+.nav-tabs > li.sc-ticket-input-tab.active > a {
+    //background-color: #f00;
+}
+
+
+////////////////////////////////////////
+//
+.sc-output {
+    font-family: "Lucida Console", Monaco, monospace !important;
+    line-height: 1.2;
+    width: 100%;
+    background-color: #000;
+    padding: 4px;
+    mergin: 0px;
+}
+
+.sc-std {
+    color: #00ff00;
+}
+
+.sc-err {
+    color: #ff0000;
+}
+
+.sc-output-layout {
+    position: relative;
+}
+.sc-output-t {
+    position: absolute;
+    top: -0.8em;
+    right: 8px;
+    margin: 0px;
+    padding: 0 2px;
+
+    background-color: #000;
+    font-size: 0.9em;
+    font-weight: bold;
+    border: solid 1px #000;
+    border-radius: 2px;
+
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+#sc-code-editor-ctrl .well {
+    margin: 0;
+}
+
+// For
+.sidebar-nav {
+    padding: 9px 0;
+}
+
+
+// For editor
+.sc-input-tabset {
+    padding-left: ( $grid-gutter-width / 2 );
+    border-left: $gray-light solid ( $grid-gutter-width / 2 );
+    margin-top: ( $grid-gutter-width * 0.5 );
+    badding-top: 0;
+}
+
+// For editor
+#sc-code-editor {
+    // nothing...
+}
+
+// For CodeMirror editor : default
+.CodeMirror {
+    margin-top: 4px;
+    font-size: 13px;
+    border: 1px solid #aaa;
+    height: auto;
+}
+
+//
+.sc-normal-editor {
+    font-family: "Lucida Console", Monaco, monospace !important;
+    line-height: 1.00;
+    width: 100%;
+    margin-top: 4px;
+    border: 1px solid #aaa;
+    height: auto;
+}
+
+// For CodeMirror Tab
+.cm-tab {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+    background-position: right;
+    background-repeat: no-repeat;
+}
+
+//
+#symbol-bunchou {
+    position: absolute;
+    right: 0px;
+    bottom: 42px;
+}
+
+
+
+
+/*
+ * Sidebar
+ */
+
+// Hide for mobile
+
+.sc-sidebar {
+    display: none;
+}
+
+@media (min-width: $grid-float-breakpoint) {
+    .sc-sidebar {
+        position: fixed;
+        display: block;
+        z-index: 1000;
+
+        width: ($screen-lg / $grid-columns) * 2 - $grid-gutter-width * 2;
+    }
+}
+
+@media (max-width: $screen-lg-min) {
+    .sc-sidebar {
+        width: ($screen-md / $grid-columns) * 2 - $grid-gutter-width * 2;
+    }
+}
+
+@media (max-width: $screen-md-min) {
+    .sc-sidebar {
+        width: ($screen-sm / $grid-columns) * 2 - $grid-gutter-width * 2;
+    }
+}

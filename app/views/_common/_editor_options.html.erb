@@ -1,0 +1,109 @@
+<div class="row">
+    <div class="col-sm-12">
+        <% unless @filename.nil? %>
+            <code><%= @filename %></code>
+        <% end %>
+        <button class="btn btn-default btn-xs sc-button-option" ng-click="toggle_option_collapse()">
+            option
+        </button>
+    </div>
+</div>
+
+<!-- editor options -->
+<div class="row"
+     collapse="is_option_collapsed">
+
+    <!-- font size -->
+    <div class="col-sm-2">
+        <select ui-select2="{ minimumResultsForSearch: 20 }"
+                ng-model="font_size.current"
+                ng-change="font_size.change()"
+                style="width: 100%">
+            <optgroup label="FontSize:">
+                <option ng-repeat="font_size in font_size.list"
+                        value="{{font_size}}">
+                    {{font_size}}
+                </option>
+            </optgroup>
+        </select>
+    </div>
+    <!-- /font size -->
+
+
+    <!-- tab or space -->
+    <div class="col-sm-2">
+        <select ui-select2="{ minimumResultsForSearch: 20 }"
+                ng-model="tab_or_space.current"
+                ng-change="tab_or_space.change()"
+                style="width: 100%">
+            <optgroup label="Indent:">
+                <option ng-repeat="tab_or_space in tab_or_space.list"
+                        value="{{tab_or_space}}">
+                    {{tab_or_space}}
+                </option>
+            </optgroup>
+        </select>
+    </div>
+    <!-- /tab or space -->
+
+    <!-- indent -->
+    <div class="col-sm-1">
+        <select ui-select2="{ minimumResultsForSearch: 20 }"
+                ng-model="indent_size.current"
+                ng-change="indent_size.change()"
+                style="width: 100%">
+            <optgroup label="Indent:">
+                <option ng-repeat="indent_size in indent_size.list"
+                        value="{{indent_size}}">
+                    {{indent_size}}
+                </option>
+            </optgroup>
+        </select>
+    </div>
+    <!-- /indent -->
+
+    <!-- keybind -->
+    <div class="col-sm-2">
+        <select ui-select2="{ minimumResultsForSearch: 20 }"
+                ng-model="keybind.current"
+                ng-change="keybind.change()"
+                style="width: 100%">
+            <optgroup label="KeyBind:">
+                <option ng-repeat="keybind in keybind.list"
+                        value="{{keybind}}">
+                    {{keybind}}
+                </option>
+            </optgroup>
+        </select>
+    </div>
+    <!-- /keybind -->
+
+    <!-- theme -->
+    <div class="col-sm-3">
+        <select ui-select2
+                ng-model="theme.current"
+                ng-change="theme.change()"
+                style="width: 100%">
+            <optgroup label="Theme:">
+                <option ng-repeat="theme in theme.list"
+                        value="{{theme}}">
+                    {{theme}}
+                </option>
+            </optgroup>
+        </select>
+    </div>
+    <!-- /theme -->
+
+    <!-- theme -->
+    <div class="col-sm-2">
+        <input type="checkbox"
+               id="sc-dissable-rich-editor"
+               name="sc-dissable-rich-editor"
+               ng-model="dissable_rich_editor"
+               >
+        <label for="sc-dissable-rich-editor">simple editor</label>
+    </div>
+    <!-- /theme -->
+
+</div>
+<!-- /editor options -->

@@ -1,0 +1,86 @@
+<div class="container">
+
+    <div class="row">
+        <div class="col-sm-6">
+            <%= paginate @entries_only %>
+        </div>
+        <div class="col-sm-2">
+            <p class="text-right">
+                <span class="glyphicon glyphicon-file"><%= Entry.count %>Entries</span>
+            </p>
+        </div>
+        <div class="col-sm-4">
+            <%= form_tag "/entries/!search", method: :get do %>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                    <%= text_field_tag "query", params[:query], { :class => 'form-control', :placeholder => "language" } %>
+                    <span class="input-group-btn">
+                        <%= submit_tag "Search", { :name => nil, :class => 'btn btn-default' } %>
+                    </span>
+                </div>
+            <% end %>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>EntryID</th>
+                    <th>Language</th>
+                    <th>Created at</th>
+                    <th>Visibility</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <% @entries.each do |entry| %>
+                    <tr data-link="<%= entries_path() %>">
+                        <td>
+                            <%= link_to "##{entry[:entry].id}", "/entries/#{entry[:entry].id}" %>
+                        </td>
+
+                        <td>
+                            <%= entry[:entry].language_tags.join(' / ') unless entry[:entry].language_tags.nil? %>
+                        </td>
+
+                        <td>
+                            <%= distance_of_time_in_words_to_now( entry[:entry].created_at ) unless entry[:entry].created_at.nil? %> ago
+                        </td>
+
+                        <td>
+                            <% case entry[:entry].visibility %>
+                            <% when 0 %>
+                            <span class="glyphicon glyphicon-globe"></span> Public
+
+                            <% when 1 %>
+                            <span class="glyphicon glyphicon-eye-close"></span> Protected
+
+                            <% when 2 %>
+                            <span class="glyphicon glyphicon-minus-sign"></span> Private
+
+                <% end %>
+                        </td>
+
+
+                        <td>
+                            <% unless entry[:user].nil? %>
+                                <%= entry[:user].name unless entry[:user].nil? %>
+                            <% else %>
+                                <small>(anon)</small>
+                            <% end %>
+                        </td>
+                    </tr>
+                    <% end %>
+            </tbody>
+
+        </table>
+    </div>
+
+    <div class="row">
+        <%= paginate @entries_only %>
+    </div>
+
+</div>

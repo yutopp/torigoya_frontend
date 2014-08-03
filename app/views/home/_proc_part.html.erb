@@ -1,0 +1,41 @@
+<div class="container-fluid has-no-extra-space">
+    <div class="row sc-lang-op-row">
+        <div class="col-sm-5">
+            <select ui-select2
+                    ng-model="ticket.proc.selected"
+                    ng-options="proc as proc.title group by proc.group for proc in procs"
+                    style="width: 100%"
+                    >
+                <option ng-repeat="item in items">select a region</option>
+            </select>
+        </div>
+
+        <div class='col-sm-4'>
+            <div ng-if="ticket.proc.selected.profile.runnable() == true">
+                <input type='checkbox'
+                       ng-model="ticket.do_execution">
+                exec?
+                </input>
+            </div>
+        </div>
+
+        <div class='col-sm-2 text-right'>
+            <span class="label"
+                  ng-class="ticket.ui.phase_label_style">
+                {{ticket.ui.phase_label}}
+            </span>
+        </div>
+    </div>
+    <!-- /language operation -->
+
+    <!-- compile link -->
+    <div class="row" ng-if="ticket.proc.selected.profile.is_build_required === true">
+        <div class="col-sm-12">
+            <accordion close-others="false">
+                <%= render :partial => '_common/ticket_detail_accordion_group', :locals => { :mode => 'compile', :readonly => false } %>
+                <%= render :partial => '_common/ticket_detail_accordion_group', :locals => { :mode => 'link', :readonly => false } %>
+            </accordion>
+        </div>
+    </div>
+    <!-- /compile link -->
+</div>

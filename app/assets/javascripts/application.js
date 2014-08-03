@@ -12,5 +12,22 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require jquery-ui/resizable
+//= require jquery.cookie
+//= require bootstrap
+//= require angular
+//= require angular-ui-bootstrap-tpls
+//= require angular-ui-select2
+//= require codemirror
+//= require codemirror/keymaps/emacs
+//= require codemirror/keymaps/vim
+//= require codemirror/addons/mode/loadmode
+//= require codemirror/addons/edit/matchbrackets
+//= require jquery.autosize
 //= require turbolinks
 //= require_tree .
+
+// with turbolinks
+$(document).on('ready page:load', function() {
+    angular.bootstrap(document.body, ['ProcGardenApp']);
+});
