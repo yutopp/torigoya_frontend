@@ -679,7 +679,7 @@ ProcGardenApp.controller(
                 for proc_version, proc_profile of proc_profile_table
                     $scope.procs.push {
                         id: i,
-                        value: {proc_id: proc_id, proc_version: proc_version},
+                        value: {proc_id: parseInt(proc_id, 10), proc_version: proc_version},
                         title: "#{description.name} - #{proc_version}",
                         group: description.name,
                         profile: new ProcProfile(description, proc_profile)
@@ -859,6 +859,10 @@ ProcGardenApp.controller(
             source_code = (new CodemirrorEditor).get_value()
             # console.log source_code
 
+
+            for ticket in $scope.tickets
+                console.log
+
             #####
             # !!!! construct POST data
             raw_submit_data = {
@@ -868,8 +872,8 @@ ProcGardenApp.controller(
                     source_code
                 ],
                 tickets: ({
-                    proc_id: 100,
-                    proc_version: "!=head",
+                    proc_id: ticket.proc.selected.value.proc_id,
+                    proc_version: ticket.proc.selected.value.proc_version,
                     do_execution: ticket.do_execution,
                     compile: {
                         structured_command_line: ticket.compile.structured_command_line.body,
