@@ -45,7 +45,7 @@ module Cages
 
     def pick(platform = :linux)
       # TODO: fix it
-      return TorigoyaKit::Session.new(list()[0].addr, list()[0].port)
+      return TorigoyaKit::Session.new(list()[0][:addr], list()[0][:port])
     end
   end
 
