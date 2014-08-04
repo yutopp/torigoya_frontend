@@ -9,11 +9,12 @@ Rails.application.routes.draw do
   match 'home/index' => 'home#index', :via => [:get, :post]
 
   #
+  match 'entries' => 'entries#show_list', :via => :get
+  match 'entries/:entry_id' => 'entries#show_entry', :via => :get
+
+  #
   match 'api/source' => 'api#post_source', :via => :post
   match 'api/entry/:entry_id' => 'api#get_entry', :via => :get
   match 'api/ticket/:ticket_id' => 'api#get_ticket', :via => :get
-
-  #
-  match 'entries' => 'entries#show_list', :via => :get
-  match 'entries/:entry_id' => 'entries#show_entry', :via => :get
+  match 'api/nodes' => 'api#get_cage_nodes', :via => :get
 end

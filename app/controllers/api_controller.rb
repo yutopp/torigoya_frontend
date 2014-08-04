@@ -3,7 +3,10 @@ require 'mongoid/grid_fs'
 require 'tempfile'
 
 class ApiController < ApplicationController
+  include Cages
   include ExecutionTaskWorker
+
+  protect_from_forgery except: [:get_cage_nodes]
 
   def post_source
     unless params.has_key?("api_version")
@@ -68,6 +71,23 @@ class ApiController < ApplicationController
     }
 
 #    Rails.logger.error ">>>>>>>>>>>>> class => #{e.class}\n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
+
+  ensure
+    render :json => result.to_json
+  end
+
+
+  def get_cage_nodes
+    result = {
+      :is_error => false,
+      :nodes => get_nodes_info()
+    }
+
+  rescue => e
+    result = {
+      :is_error => true,
+      :message => e.to_s
+    }
 
   ensure
     render :json => result.to_json
