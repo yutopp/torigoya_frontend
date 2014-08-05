@@ -1,7 +1,7 @@
 # AngularJS
 ProcGardenApp = angular.module('ProcGardenApp', ['ui.select2', 'ui.bootstrap', 'luegg.directives'])
 
-class PhaseConstatnt
+class PhaseConstant
     @Waiting = 0
     @NotExecuted = 10
     @Compiling = 200
@@ -13,7 +13,7 @@ class PhaseConstatnt
     @Error = 401
 
 
-class StatusConstatnt
+class StatusConstant
     @MemoryLimit = 1
     @CPULimit = 2
     @OutputLimit = 22
@@ -157,27 +157,27 @@ class UILabel
             return
 
         switch result.status
-            when StatusConstatnt.MemoryLimit
+            when StatusConstant.MemoryLimit
                 @label = "MemoryLimitExceeded"
                 @label_style = "label-info"
 
-            when StatusConstatnt.CPULimit
+            when StatusConstant.CPULimit
                 @label = "TimeLimitExceeded"
                 @label_style = "label-warning"
 
-            when StatusConstatnt.OutputLimit
-                @label = "Error"
+            when StatusConstant.OutputLimit
+                @label = "OutputLimit"
                 @label_style = "label-danger"
-            when StatusConstatnt.Error
+
+            when StatusConstant.Error
                 @label = "Error"
                 @label_style = "label-danger"
 
-            when StatusConstatnt.InvalidCommand
+            when StatusConstant.InvalidCommand
                 @label = "InvalidCommand"
                 @label_style = "label-danger"
 
-            when StatusConstatnt.Passed
-                console.log "AAA", result
+            when StatusConstant.Passed
                 if result.signal? || !result.exit? || result.exit != 0
                     @label = "RuntimeError"
                     @label_style = "label-danger"
@@ -185,7 +185,7 @@ class UILabel
                     @label = "Success"
                     @label_style = "label-success"
 
-            when StatusConstatnt.UnexpectedError
+            when StatusConstant.UnexpectedError
                 @label = "UnexpectedError(Please report this page...)"
                 @label_style = "label-danger"
 
@@ -539,40 +539,40 @@ class Ticket
             return
 
         switch phase
-            when PhaseConstatnt.Waiting
+            when PhaseConstant.Waiting
 
                 @ui.phase_label = "Waiting..."
                 @ui.phase_label_style = "label-info"
 
-            when PhaseConstatnt.NotExecuted
+            when PhaseConstant.NotExecuted
                 @ui.phase_label = "NotExecuted"
                 @ui.phase_label_style = "label-default"
 
-            when PhaseConstatnt.Compiling
+            when PhaseConstant.Compiling
                 @ui.phase_label = "Compiling"
                 @ui.phase_label_style = "label-warning"
 
-            when PhaseConstatnt.Compiled
+            when PhaseConstant.Compiled
                 @ui.phase_label = "Compiled"
                 @ui.phase_label_style = "label-success"
 
-            when PhaseConstatnt.Linking
+            when PhaseConstant.Linking
                 @ui.phase_label = "Linking"
                 @ui.phase_label_style = "label-warning"
 
-            when PhaseConstatnt.Linked
+            when PhaseConstant.Linked
                 @ui.phase_label = "Linked"
                 @ui.phase_label_style = "label-success"
 
-            when PhaseConstatnt.Running
+            when PhaseConstant.Running
                 @ui.phase_label = "Running"
                 @ui.phase_label_style = "label-primary"
 
-            when PhaseConstatnt.Finished
+            when PhaseConstant.Finished
                 @ui.phase_label = "Finished"
                 @ui.phase_label_style = "label-success"
 
-            when PhaseConstatnt.UnexpectedFinished
+            when PhaseConstant.Error
                 @ui.phase_label = "System Error(Please report this page!)"
                 @ui.phase_label_style = "label-danger"
 

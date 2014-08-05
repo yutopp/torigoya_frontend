@@ -53,7 +53,6 @@ module ExecutionTaskWorker
 
             rescue Errors::RunnerError => e
               Rails.logger.error "Worker / RunnerError in Worker thread. ticket[id=#{model.id}]. \n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
-              #ticket.error!
 
             rescue Encoding::CompatibilityError, Encoding::UndefinedConversionError => e
               Rails.logger.error "Worker / Encoding error in Worker thread. ticket[id=#{model.id}]. \n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
@@ -64,13 +63,11 @@ module ExecutionTaskWorker
 
             rescue => e
               Rails.logger.error "Worker / unexpected in Worker thread. ticket[id=#{model.id}]. \n!! class => #{e.class}\n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
-              #ticket.error!
 
             ensure
               model.is_running = false
               model.save!
-              #ticket.ensure!
-              #ticket.show
+
               Rails.logger.debug "Worker / finished work!"
             end
           end # loop
