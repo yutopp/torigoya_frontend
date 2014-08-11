@@ -1,6 +1,6 @@
 class User
   include Mongoid::Document
- # Include default devise modules. Others available are:
+  # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -12,9 +12,6 @@ class User
   ## Database authenticatable
   field :email,              :type => String, :default => ""
   field :encrypted_password, :type => String, :default => ""
-
-  ## yutopp appended
-  field :is_password_registered, :type => Boolean, :default => true
 
   ## Recoverable
   field :reset_password_token,   :type => String
@@ -56,4 +53,7 @@ class User
   # Array of Hash{'provider' => ~~, 'uid' => ~~}
   # Ex,
   # [{ 'provider' => auth.provider, 'uid' => auth.uid}, {'provider' => auth.provider, 'uid' => auth.uid}]
+
+  ## yutopp appended
+  field :is_password_registered, :type => Boolean, :default => true
 end

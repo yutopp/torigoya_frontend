@@ -1,16 +1,34 @@
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
+  # for omniauth
+  require 'omniauth-github'
+  require 'omniauth-twitter'
+
+  config.omniauth(:github,
+                  Rails.application.secrets.github_client_id,
+                  Rails.application.secrets.github_client_secret,
+                  #scope: "user:email"
+                  )
+
+  unless Rails.env.production?
+    config.omniauth(:twitter,
+                    Rails.application.secrets.twitter_api_key,
+                    Rails.application.secrets.twitter_api_secret,
+                    #scope: "user:email"
+                    )
+  end
+
   # The secret key used by Devise. Devise uses this key to generate
   # random tokens. Changing this key will render invalid all existing
   # confirmation, reset password and unlock tokens in the database.
-  # config.secret_key = '59d85572a29c91422ba6a5318fde58b56fed65c2ecb7c2e671ad0920365de8d5dd47b9f716bf913be8b3e2e2185ffcd7afdb486bf305c1fc8570879286caca3b'
+  config.secret_key = Rails.application.secrets.devise_secret_key
 
   # ==> Mailer Configuration
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
+  config.mailer_sender = 'noreply@test.sc.yutopp.net'
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -97,7 +115,7 @@ Devise.setup do |config|
   config.stretches = Rails.env.test? ? 1 : 10
 
   # Setup a pepper to generate the encrypted password.
-  # config.pepper = '7bba72a5d28ad235a159cd43e93d6b166737191c4b35a98b8e2d0142996b4f85b81b9da07a24ab4e12de4c88d1c02fc998e9f1933f54cd9116650ed269080e6c'
+  config.pepper = Rails.application.secrets.devise_pepper
 
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without
