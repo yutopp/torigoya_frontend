@@ -51,7 +51,7 @@ gem 'torigoya_kit'
 
 #
 gem 'devise', github: 'plataformatec/devise'
-gem 'cancan', github: 'ryanb/cancan'
+gem 'cancancan', '~> 1.9'
 
 #
 gem 'omniauth', github: 'intridea/omniauth'
