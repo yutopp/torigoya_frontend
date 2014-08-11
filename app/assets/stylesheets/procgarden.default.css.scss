@@ -4,7 +4,7 @@ $grid-gutter-width:         8px;
 $grid-float-breakpoint:     768px;
 $navbar-height:             40px;
 $footer_height:             50px;
-
+$navbar-inverse-link-color: #ccc;
 @import "bootstrap-sprockets";
 @import "bootstrap";
 
@@ -279,4 +279,9 @@ body {
     .sc-sidebar {
         width: ($screen-sm / $grid-columns) * 2 - $grid-gutter-width * 2;
     }
+}
+
+
+.sc-feedback {
+    width: 300px;
 }

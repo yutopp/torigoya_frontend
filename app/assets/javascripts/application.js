@@ -31,3 +31,11 @@
 $(document).on('ready page:load', function() {
     angular.bootstrap(document.body, ['ProcGardenApp']);
 });
+
+$(function() {
+    $('#feedback-toggle').dropdown();
+
+    $('#feedback-box *').click(function(e) {
+        e.stopPropagation();
+    });
+});

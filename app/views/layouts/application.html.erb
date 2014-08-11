@@ -53,8 +53,24 @@
                         </ul>
 
                         <ul class="nav navbar-nav navbar-right">
+                            <!-- feedback -->
+                            <li id="feedback-box">
+                                <a href="#" id="feedback-toggle" data-toggle="dropdown">Feedback <span class="caret"></span></a>
+                                <ul class="dropdown-menu sc-feedback" role="menu">
+                                    <%= form_tag('/feedback/send', :remote => true, :authenticity_token => true) do %>
+                                        <%= text_area_tag :body, '', :id => 'body', :class => 'form-control', :placeholder => 'Please write feedback...', :maxlength => 2048, :rows => 10, 'ng-model' => 'feedback_text' %>
+
+                                        <%= label_tag :limit, 'Up to 2048 characters' %>
+                                        <%= submit_tag :send, :class => 'btn btn-primary btn-block', 'ng-disabled' => '!feedback_text' %>
+                                    <% end %>
+                                </ul>
+                            </li>
+                            <!-- /feedback -->
+
                             <% if user_signed_in? %>
-                            <p class="navbar-text">Signed in as <%= current_user.name %></p>
+                            <li>
+                                <%= link_to "Signed in as #{current_user.name}", "/users" %>
+                            </li>
                             <li>
                                 <%= link_to "Logout", "/users/sign_out", method: 'delete', class: "navbar-link" %>
                             </li>
@@ -73,36 +89,35 @@
             <!-- /header -->
 
 
-            <!-- notice -->
-            <% if flash.any?{|k, v| v != ""} %>
-            <div class="row">
-                <div class="col-md-12">
-                    <% flash.each do |name, message| %>
-                    <%
-                    tag = case name.to_s
-                    when "alert", "error" then
-                      'danger'
-                    when "notice" then
-                      'success'
-                    else
-                      name
-                    end
-                    %>
-
-                    <div class="alert alert-<%= tag %> alert-dismissable">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <%= message %>
-                    </div>
-
-                    <% end %>
-                </div>
-            </div>
-            <% end %>
-            <!-- /notice -->
-
-
             <!-- body -->
             <div class="main-container" ng-view>
+                <!-- notice -->
+                <% if flash.any?{|k, v| v != ""} %>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <% flash.each do |name, message| %>
+                                <%
+                                tag = case name.to_s
+                                      when "alert", "error" then
+                                        'danger'
+                                      when "notice" then
+                                        'success'
+                                      else
+                                        name
+                                      end
+                                %>
+
+                                <div class="alert alert-<%= tag %> alert-dismissable">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                    <%= message %>
+                                </div>
+
+                            <% end %>
+                        </div>
+                    </div>
+                <% end %>
+                <!-- /notice -->
+
                 <%= yield %>
 
                 <!-- footer -->
@@ -120,6 +135,18 @@
 
         </div>
         <!-- /container -->
+
+        <!-- feedback modal -->
+        <div class="modal fade" id="feedback-modal" tabindex="-1" role="dialog" aria-labelledby="sc-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <p>Thanks for your feedback!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /feedback modal -->
     </body>
 
     <script type="text/javascript">
