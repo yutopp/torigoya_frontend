@@ -1,5 +1,3 @@
-require 'base64'
-
 class Entry
   include Mongoid::Document
   include Mongoid::Timestamps
@@ -23,6 +21,7 @@ class Code
   field :file_name, :type => String
   field :type, :type => Symbol  # :native, :gist
 end
+
 
 class Ticket
   include Mongoid::Document
