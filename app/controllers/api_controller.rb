@@ -1,6 +1,8 @@
 require 'torigoya_kit'
 require 'mongoid/grid_fs'
 require 'tempfile'
+require 'digest/md5'
+require 'securerandom'
 
 class ApiController < ApplicationController
   include Cages
@@ -262,7 +264,8 @@ class ApiController < ApplicationController
         ##### ========================================
         run_inst = TorigoyaKit::RunInstruction.new(inputs)
 
-        next TorigoyaKit::Ticket.new("base_name", proc_id, proc_version, source_codes, build_inst, run_inst)
+        base_name = Digest::MD5.hexdigest("#{proc_id}/#{proc_version}/#{source_codes}/#{Time.now}") + SecureRandom.hex(16)
+        next TorigoyaKit::Ticket.new(base_name, proc_id, proc_version, source_codes, build_inst, run_inst)
 
       else
         next {
