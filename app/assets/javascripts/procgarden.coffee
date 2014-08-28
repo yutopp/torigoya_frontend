@@ -242,6 +242,16 @@ class UIInfoWithCommandLine extends UIInfo
     should_toggle: () =>
         return @allowed_structured_command_line.length > 0
 
+
+# https://developer.mozilla.org/ja/docs/Web/API/window.btoa#Unicode_Strings
+utf8_to_b64 = (str) =>
+    return window.btoa( unescape(encodeURIComponent( str )) )
+
+
+b64_to_utf8 = (str) =>
+    return decodeURIComponent( escape(window.atob( str )) )
+
+
 ##########
 #
 class Result
@@ -280,8 +290,8 @@ class Result
         #system_error_message
 
         # out and err is encoded by base64, so do decodeing
-        @stdout     = if result.out? then atob(result.out) else ""
-        @stderr     = if result.err? then atob(result.err) else ""
+        @stdout     = if result.out? then b64_to_utf8(result.out) else ""
+        @stderr     = if result.err? then b64_to_utf8(result.err) else ""
 
 
 ##########
