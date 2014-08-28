@@ -23,6 +23,9 @@ Rails.application.routes.draw do
   match 'api/nodes' => 'api#get_cage_nodes', :via => :get
 
   #
+  match 'about' => 'about#index', :via => :get
+
+  #
   # for master controller(like dashboard for admin)
   match 'master' => 'master#index', :via => :get
   match 'master/users' => 'master#list_users', :via => :get
