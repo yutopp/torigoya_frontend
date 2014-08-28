@@ -244,12 +244,11 @@ class UIInfoWithCommandLine extends UIInfo
 
 
 # https://developer.mozilla.org/ja/docs/Web/API/window.btoa#Unicode_Strings
-utf8_to_b64 = (str) =>
-    return window.btoa( unescape(encodeURIComponent( str )) )
-
-
 b64_to_utf8 = (str) =>
-    return decodeURIComponent( escape(window.atob( str )) )
+    try
+        return decodeURIComponent(escape(window.atob(str)))
+    catch e
+        return window.atob(str)
 
 
 ##########
