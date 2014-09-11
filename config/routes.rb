@@ -1,8 +1,12 @@
 Rails.application.routes.draw do
   devise_for :users, :controllers => {
-    :registrations => "registrations",
-    :omniauth_callbacks => "users/omniauth_callbacks"
+    :omniauth_callbacks => "users/omniauth_callbacks",
+    :registrations => "users/registrations"
   }
+  devise_scope :user do
+    get 'users/complete_link', :to => 'users/registrations#complete_link'
+    post 'users/complete_link', :to => 'users/registrations#create_link'
+  end
 
   #
   root 'home#index'

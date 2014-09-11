@@ -1,5 +1,10 @@
 class User
   include Mongoid::Document
+
+  # Shown name
+  field :name, :type => String, :default => ""
+  validates_presence_of :name
+
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
@@ -41,9 +46,6 @@ class User
   ## Token authenticatable
   # field :authentication_token, :type => String
 
-  # Shown name
-  field :name, :type => String, :default => ""
-
   # For Omniauth?
   field :third_auth, :type => Array
   #field :provider, :type => String
@@ -54,6 +56,6 @@ class User
   # Ex,
   # [{ 'provider' => auth.provider, 'uid' => auth.uid}, {'provider' => auth.provider, 'uid' => auth.uid}]
 
-  ## yutopp appended
+  ## original
   field :is_password_registered, :type => Boolean, :default => true
 end
