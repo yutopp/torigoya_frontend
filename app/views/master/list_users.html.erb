@@ -1,0 +1,112 @@
+<div class="container-fluid">
+    <h2>Users</h2>
+
+    <%= paginate @users %>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <% @users.each_with_index do |user, i| %>
+
+            <tr>
+                <td>
+                    #<%= i %>
+                </td>
+                <td>
+                    <table class="table table-bordered table-hover table-condensed">
+                        <tr>
+                            <th>Name</th>
+                            <td><%= user.name %></td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td><%= user.email %></td>
+                        </tr>
+                        <tr>
+                            <th>Encypted pass</th>
+                            <td><%= user.encrypted_password %></td>
+                        </tr>
+                        <tr>
+                            <th>Is password registered</th>
+                            <td><%= user.is_password_registered %></td>
+                        </tr>
+
+
+                        <tr>
+                            <th>SignInCount</th>
+                            <td><%= user.sign_in_count %></td>
+                        </tr>
+                        <tr>
+                            <th>current_sign_in_at</th>
+                            <td><%= user.current_sign_in_at %></td>
+                        </tr>
+                        <tr>
+                            <th>last_sign_in_at</th>
+                            <td><%= user.last_sign_in_at %></td>
+                        </tr>
+                        <tr>
+                            <th>current_sign_in_ip</th>
+                            <td><%= user.current_sign_in_ip %></td>
+                        </tr>
+                        <tr>
+                            <th>last_sign_in_ip</th>
+                            <td><%= user.last_sign_in_ip %></td>
+                        </tr>
+
+                        <tr>
+                            <th>confirmation_token</th>
+                            <td><%= user.confirmation_token %></td>
+                        </tr>
+                        <tr>
+                            <th>confirmed_at</th>
+                            <td><%= user.confirmed_at %></td>
+                        </tr>
+                        <tr>
+                            <th>confirmation_sent_at</th>
+                            <td><%= user.confirmation_sent_at %></td>
+                        </tr>
+
+                        <tr>
+                            <th>tied</th>
+                            <td>
+                                <% unless user.third_auth.nil? %>
+                                <table class="table table-bordered table-hover">
+
+                                    <% user.third_auth.each do |auth| %>
+                                    <tr>
+                                        <th>provider</th>
+                                        <td><%= auth['provider'] %></td>
+                                    </tr>
+                                    <tr>
+                                        <th>uid</th>
+                                        <td><%= auth['uid'] %></td>
+                                    </tr>
+                                    <% end %>
+
+                                </table>
+                                <% else %>
+                                None
+                                <% end %>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Actions</th>
+                            <td><%= link_to "Delete", "/master/users/#{user.id}", method: 'delete' %></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <% end %>
+        </tbody>
+    </table>
+
+    <%= paginate @users %>
+</div>

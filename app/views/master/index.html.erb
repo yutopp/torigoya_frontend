@@ -1,0 +1,69 @@
+<div class="container">
+    <h2>Users</h2>
+    <%= link_to "manage users", "/master/users", method: 'get' %>
+
+    <h2>Languages</h2>
+    <div class="row">
+        <div class="container">
+
+            <% @procs.each do |proc| %>
+                <div class="row">
+                    <div class="col-sm-5">
+                        <% if proc.masked %>
+                            <span class="glyphicon glyphicon-ban-circle text-danger"></span>
+                        <% else %>
+                            <span class="glyphicon glyphicon-eye-open text-success"></span>
+                        <% end %>
+
+                        <%= proc.description['Name'] %> / <%= proc.version %>
+                    </div>
+
+                    <div class="col-sm-7">
+                        <% if proc.masked %>
+                            <%= link_to "enable", "/master/enable_langproc/#{proc.id}", method: 'post' %>
+                        <% else %>
+                            <%= link_to "disable", "/master/disable_langproc/#{proc.id}", method: 'post' %>
+                        <% end %>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+
+    <h2>Proc</h2>
+    <%= link_to "update_proctable", "/master/update_proctable", method: 'post' %>
+
+
+
+    <h2>Runner</h2>
+    <script type="text/javascript">
+        sc_g_runner_table = <%== @runner_nodes.to_s %>;
+    </script>
+
+    <div ng-controller="RunnerNodeAddresses">
+
+        <%= form_tag( '/master/runner_node_addresses', :method => :post) do %>
+        <input type='hidden'
+               id='runner_num'
+               name='runner_num'
+               value='{{nodes.length}}'>
+
+        <div ng-repeat="node in nodes">
+            <input type='text'
+                   id='address_{{$index}}'
+                   name='address_{{$index}}'
+                   value='{{node.address}}'>
+
+            <input type='text'
+                   id='port_{{$index}}'
+                   name='port_{{$index}}'
+                   value='{{node.port}}'>
+        </div>
+
+        <button type='submit'
+                class='btn btn-success'>
+            <strong>Update!</strong>
+        </button>
+        <% end %>
+    </div>
+</div>
