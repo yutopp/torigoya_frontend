@@ -16,8 +16,9 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
 
     else
-      session["devise.github_data"] = request.env["omniauth.auth"]
-      redirect_to new_user_registration_url
+      # session["devise.github_data"] = request.env["omniauth.auth"]
+      # redirect_to new_user_registration_url
+      redirect_to '/'
     end
   end
 
@@ -34,8 +35,9 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
 
       else
-        session["devise.twitter_data"] = request.env["omniauth.auth"]
-        redirect_to new_user_registration_url
+        # session["devise.twitter_data"] = request.env["omniauth.auth"]
+        # redirect_to new_user_registration_url
+        redirect_to '/'
       end
 
     else
@@ -95,13 +97,16 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     argument = unless block.nil? then block.call(auth) else {} end
 
     # create
-    user = User.create(argument.merge({
-                                        third_auth: [{ 'provider' => auth.provider, 'uid' => auth.uid }],
-                                        password: Devise.friendly_token[0, 20],
-                                        is_password_registered: false
-                                      })
-                       )
-
+    user = User.new(argument.merge({
+                                     third_auth: [{
+                                                    'provider' => auth.provider,
+                                                    'uid' => auth.uid,
+                                                    'credentials' => auth.credentials
+                                                  }],
+                                     password: Devise.friendly_token[0, 20],
+                                     is_password_registered: false
+                                   })
+                    )
     user.skip_confirmation!
     user.save!(:validate => false)
 

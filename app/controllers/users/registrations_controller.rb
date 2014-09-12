@@ -56,13 +56,17 @@ class Users::RegistrationsController < Devise::RegistrationsController
     if self.resource.valid?(:email)
       # Succeeded!
       auth = session['incomplete_auth']
-      user = User.create({
-                           name: self.resource.name,
-                           email: self.resource.email,
-                           third_auth: [{ 'provider' => auth.provider, 'uid' => auth.uid }],
-                           password: Devise.friendly_token[0, 20],
-                           is_password_registered: false
-                         })
+      user = User.new({
+                        name: self.resource.name,
+                        email: self.resource.email,
+                        third_auth: [{
+                                       'provider' => auth.provider,
+                                       'uid' => auth.uid,
+                                       'credentials' => auth.credentials
+                                     }],
+                        password: Devise.friendly_token[0, 20],
+                        is_password_registered: false
+                      })
       user.save!(:validate => false)
 
       set_flash_message :notice, :"signed_up_but_#{resource.inactive_message}" if is_flashing_format?
