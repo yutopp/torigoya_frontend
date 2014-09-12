@@ -33,11 +33,11 @@ Rails.application.routes.draw do
   # for master controller(like dashboard for admin)
   match 'master' => 'master#index', :via => :get
   match 'master/users' => 'master#list_users', :via => :get
-  match 'master/users/:id' => 'master#delete_user', :via => :delete
+  match 'master/users/:user_id' => 'master#delete_user', :via => :delete
   match 'master/update_proctable' => 'master#update_proctable', :via => :post
   match 'master/runner_node_addresses' => 'master#update_node_addresses', :via => :post
-  match 'master/mask_proctable/:index' => 'master#mask_proctable', :via => :post
-  match 'master/unmask_proctable/:index' => 'master#unmask_proctable', :via => :post
+  match 'master/enable_langproc/:proc_id' => 'master#enable_langproc', :via => :post
+  match 'master/disable_langproc/:proc_id' => 'master#disable_langproc', :via => :post
 
   #
   match 'feedback/send' => 'feedback#send_mail', :via => :post
