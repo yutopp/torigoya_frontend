@@ -32,7 +32,9 @@ $(document).on('ready page:load', function() {
     angular.bootstrap(document.body, ['ProcGardenApp']);
 });
 
-$(function() {
+// with turbolinks
+// for feedback elements
+$(document).on('ready page:load', function() {
     $('#feedback-toggle').dropdown();
 
     $('#feedback-box *').click(function(e) {
