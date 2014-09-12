@@ -61,7 +61,7 @@
                             <% if user_signed_in? %>
                                 <li<% if navbar_user? %> class="active"<% end %>>
                                     <%= link_to "/users", {} do %>
-                                        <span class="glyphicon glyphicon-th"></span> Signed in as <%= current_user.name %>
+                                        <span class="glyphicon glyphicon-th"></span> Logged in as <%= current_user.name %>
                                     <% end %>
                                 </li>
                             <% end %>
