@@ -3,21 +3,17 @@
 Devise.setup do |config|
   # for omniauth
   require 'omniauth-github'
-  require 'omniauth-twitter'
-
   config.omniauth(:github,
                   Rails.application.secrets.github_client_id,
                   Rails.application.secrets.github_client_secret,
                   #scope: "user:email"
                   )
 
-  unless Rails.env.production?
-    config.omniauth(:twitter,
-                    Rails.application.secrets.twitter_api_key,
-                    Rails.application.secrets.twitter_api_secret,
-                    #scope: "user:email"
-                    )
-  end
+  require 'omniauth-twitter'
+  config.omniauth(:twitter,
+                  Rails.application.secrets.twitter_api_key,
+                  Rails.application.secrets.twitter_api_secret,
+                  )
 
   # The secret key used by Devise. Devise uses this key to generate
   # random tokens. Changing this key will render invalid all existing

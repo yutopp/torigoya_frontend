@@ -12,7 +12,7 @@ class User
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable,
          :omniauthable,
-         :omniauth_providers => if Rails.env.production? then [:github] else [:github, :twitter] end
+         :omniauth_providers => [:github, :twitter]
 
   ## Database authenticatable
   field :email,              :type => String, :default => ""
