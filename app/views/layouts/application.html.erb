@@ -16,7 +16,7 @@
         <!-- container -->
         <div class="container-fluid sc-top-container">
             <!-- header -->
-            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="navbar navbar-procgarden navbar-fixed-top" role="navigation">
                 <div class="container-fluid">
                     <div class="navbar-header">
                         <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
@@ -25,36 +25,47 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <%= link_to 'ProcGarden(鳥小屋)', '/', {'class' => 'navbar-brand'} %>
+
+                        <%= link_to '/', {'class' => 'navbar-brand-procgarden'} do %>
+                            <img class="logo" src="/favicon.ico"> ProcGarden
+                        <% end %>
                     </div>
                     <nav class="collapse navbar-collapse" role="navigation">
                         <ul class="nav navbar-nav">
-                            <li <% if params[:controller] == "home" %>class="active"<% end %>>
+                            <li<% if navbar_home? %> class="active"<% end %>>
                                 <a href="/">Home</a>
                             </li>
 
                             <% if false %>
-                            <li <% if params[:controller] == "entries" %>class="active"<% end %>>
+                            <li<% if params[:controller] == "entries" %> class="active"<% end %>>
                                 <a href="/entries">Entries</a>
                             </li>
 
-                            <li <% if params[:controller] == "samples" %>class="active"<% end %>>
+                            <li<% if params[:controller] == "samples" %> class="active"<% end %>>
                                 <a href="/samples">Samples</a>
                             </li>
                             <% end # if false%>
 
-                            <li <% if params[:controller] == "about" %>class="active"<% end %>>
+                            <li<% if navbar_about? %> class="active"<% end %>>
                                 <a href="/about">About</a>
                             </li>
 
                             <% if can? :manage, :all %>
-                            <li <% if params[:controller] == "master" %>class="active"<% end %>>
-                                <a href="/master">ControlPanel</a>
-                            </li>
+                                <li<% if navbar_master? %> class="active"<% end %>>
+                                    <a href="/master">ControlPanel</a>
+                                </li>
                             <% end %>
                         </ul>
 
                         <ul class="nav navbar-nav navbar-right">
+                            <% if user_signed_in? %>
+                                <li<% if navbar_user? %> class="active"<% end %>>
+                                    <%= link_to "/users", {} do %>
+                                        <span class="glyphicon glyphicon-th"></span> Signed in as <%= current_user.name %>
+                                    <% end %>
+                                </li>
+                            <% end %>
+
                             <!-- feedback -->
                             <li id="feedback-box">
                                 <a href="#" id="feedback-toggle" data-toggle="dropdown">Feedback <span class="caret"></span></a>
@@ -69,25 +80,20 @@
                             </li>
                             <!-- /feedback -->
 
-                            <% if false %>
-
                             <% if user_signed_in? %>
-                            <li>
-                                <%= link_to "Signed in as #{current_user.name}", "/users" %>
-                            </li>
-                            <li>
-                                <%= link_to "Logout", "/users/sign_out", method: 'delete', class: "navbar-link" %>
-                            </li>
-                            <% else %>
-                            <li>
-                                <%= link_to "Register", "/users/sign_up", class: "navbar-link" %>
-                            </li>
-                            <li>
-                                <%= link_to "Login", "/users/sign_in", class: "navbar-link" %>
-                            </li>
-                            <% end %>
+                                <li>
+                                    <%= link_to "Logout", "/users/sign_out", method: 'delete', class: "navbar-link" %>
+                                </li>
 
-                            <% end # if false %>
+                            <% else %>
+                                <li<% if navbar_register? %> class="active"<% end %>>
+                                    <%= link_to "Register", "/users/sign_up", class: "navbar-link" %>
+                                </li>
+
+                                <li<% if navbar_login? %> class="active"<% end %>>
+                                    <%= link_to "Login", "/users/sign_in", class: "navbar-link" %>
+                                </li>
+                            <% end %>
                         </ul>
                     </nav>
                 </div>
@@ -99,8 +105,9 @@
             <div class="main-container" ng-view>
                 <!-- notice -->
                 <% if flash.any?{|k, v| v != ""} %>
+                    <div class="container">
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-sm-offset-2 col-sm-8">
                             <% flash.each do |name, message| %>
                                 <%
                                 tag = case name.to_s
@@ -113,13 +120,14 @@
                                       end
                                 %>
 
-                                <div class="alert alert-<%= tag %> alert-dismissable">
-                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <div class="alert alert-<%= tag %> alert-dismissable" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                                     <%= message %>
                                 </div>
 
                             <% end %>
                         </div>
+                    </div>
                     </div>
                 <% end %>
                 <!-- /notice -->
