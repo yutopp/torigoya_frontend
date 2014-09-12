@@ -1,0 +1,21 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-offset-2 col-sm-12">
+            <h1><span class="glyphicon glyphicon-user"></span> User</h1>
+        </div>
+    </div>
+
+    <div class="row">
+         <div class="col-sm-2">
+             <%= render :partial => '_user_menu/menu', :locals => { :active => 'users' } %>
+         </div>
+
+         <div class="col-sm-10">
+             <div class="well well-sm">
+                 <% if can? :manage, :all %>
+                     <p>You are admin.</p>
+                 <% end %>
+             </div>
+         </div>
+    </div>
+</div>
