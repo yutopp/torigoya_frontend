@@ -45,7 +45,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       session["incomplete_auth.name"] = session["incomplete_auth"].info.nickname
 
       set_flash_message(:notice, :success, :kind => "Twitter") if is_navigational_format?
-      flash[:notice] += " Please fill."
+      flash[:notice] += " Please complete registration."
 
       redirect_to '/users/complete_link'
     end
@@ -129,7 +129,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   ##########
   #
   def link_service_to_current_user(user, auth)
-    raise current_user.to_s
+    raise "under construction..." # current_user.to_s
 
     if user.nil?
       # add provider data to 'current_user'
