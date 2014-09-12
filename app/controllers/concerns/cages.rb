@@ -43,13 +43,15 @@ module Cages
         begin
           ts = LangProc.where(proc_id: proc_id, version: version)
           lang_proc = ts.first
+          raise "" if lang_proc.nil?
+
           lang_proc.description = body['Description']
           lang_proc.versioned_info = versioned_info
           lang_proc.save!
 
           tmp.delete(lang_proc.id)
 
-        rescue Mongoid::Errors::DocumentNotFound
+        rescue Mongoid::Errors::DocumentNotFound, RuntimeError
           lang_proc = LangProc.new({
                                      :proc_id => proc_id,
                                      :description => body['Description'],
