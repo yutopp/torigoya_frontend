@@ -9,8 +9,8 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
- *= require jquery-ui/resizable
- *= require angular-ui-select2
+ *= require jquery-ui
+ *= require select2
  *= require codemirror
  *= require codemirror/themes/ambiance
  *= require codemirror/themes/blackboard
