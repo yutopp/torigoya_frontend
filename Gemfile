@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-
+source 'https://rails-assets.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.1.4'
@@ -12,6 +12,8 @@ gem 'uglifier', '>= 1.3.0'
 
 # Use CoffeeScript for .js.coffee assets and views
 gem 'coffee-rails', '~> 4.0.0'
+# Use TypeScript for .js.ts
+gem 'typescript-rails', :github => 'yutopp/typescript-rails'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
 gem 'therubyracer',  platforms: :ruby
@@ -20,14 +22,16 @@ gem 'therubyracer',  platforms: :ruby
 gem 'bootstrap-sass'
 gem 'angularjs-rails'
 gem 'angular-ui-bootstrap-rails'
-gem 'angular-ui-select2-rails', :github => 'yutopp/angular-ui-select2-rails'
+
+#
+gem 'rails-assets-jquery'
+gem 'rails-assets-jquery-cookie'
+gem 'rails-assets-jquery-ui'
+gem 'rails-assets-jquery-autosize'
+gem 'rails-assets-angular-ui-select2'
 
 # Use jquery as the JavaScript library
-gem 'jquery-rails'
-gem 'jquery-cookie-rails', :github => 'RyanScottLewis/jquery-cookie-rails'
-gem 'jquery-ui-rails', :github => 'joliss/jquery-ui-rails'
 gem 'codemirror-rails', :github => 'fixlr/codemirror-rails'
-gem 'autosize-rails', :github => 'calebthompson/autosize-rails'
 
 gem 'kaminari'
 

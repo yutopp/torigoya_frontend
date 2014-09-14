@@ -1,24 +1,10 @@
 GIT
-  remote: git://github.com/RyanScottLewis/jquery-cookie-rails.git
-  revision: 8a3132d4b0ee475a71eb2697881db87a5e2c51d2
-  specs:
-    jquery-cookie-rails (1.4.1.0)
-      railties (>= 3.2.0, < 5.0)
-
-GIT
   remote: git://github.com/arunagw/omniauth-twitter.git
   revision: e0a65062f995dff390fd37e83986ab0c9266bedb
   specs:
     omniauth-twitter (1.0.1)
       multi_json (~> 1.3)
       omniauth-oauth (~> 1.0)
-
-GIT
-  remote: git://github.com/calebthompson/autosize-rails.git
-  revision: 344aadbd5a23f6d8a118a0545ed18c2c2dbdc802
-  specs:
-    autosize-rails (1.18.8)
-      rails (>= 3.1)
 
 GIT
   remote: git://github.com/fixlr/codemirror-rails.git
@@ -42,13 +28,6 @@ GIT
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
-
-GIT
-  remote: git://github.com/joliss/jquery-ui-rails.git
-  revision: a4cdafba41d71cb3e226e3c06e806e98cda6e6ed
-  specs:
-    jquery-ui-rails (5.0.0)
-      railties (>= 3.2.16)
 
 GIT
   remote: git://github.com/mongoid/mongoid.git
@@ -80,15 +59,17 @@ GIT
       puma (>= 2.6)
 
 GIT
-  remote: git://github.com/yutopp/angular-ui-select2-rails.git
-  revision: 435b8885d6e92147cffba4d80e454861eead8c02
+  remote: git://github.com/yutopp/typescript-rails.git
+  revision: 1782de981893549cdbc7414103325deb4c0954ba
   specs:
-    angular-ui-select2-rails (0.1.1)
-      jquery-rails
-      select2-rails
+    typescript-rails (0.4.1)
+      railties
+      tilt
+      typescript-node (>= 1.1.0)
 
 GEM
   remote: https://rubygems.org/
+  remote: https://rails-assets.org/
   specs:
     actionmailer (4.1.4)
       actionpack (= 4.1.4)
@@ -171,9 +152,6 @@ GEM
     jbuilder (2.1.3)
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
-    jquery-rails (3.1.2)
-      railties (>= 3.0, < 5.0)
-      thor (>= 0.14, < 2.0)
     json (1.8.1)
     jwt (1.0.0)
     kaminari (0.16.1)
@@ -243,6 +221,20 @@ GEM
       bundler (>= 1.3.0, < 2.0)
       railties (= 4.1.4)
       sprockets-rails (~> 2.0)
+    rails-assets-angular (1.2.24)
+    rails-assets-angular-ui-select2 (0.0.5)
+      rails-assets-angular (>= 1.2.0)
+      rails-assets-jquery (>= 1.6.4)
+      rails-assets-select2 (~> 3.4)
+    rails-assets-jquery (2.1.1)
+    rails-assets-jquery-autosize (1.18.12)
+      rails-assets-jquery (>= 1.7)
+    rails-assets-jquery-cookie (1.4.1)
+      rails-assets-jquery (>= 1.2)
+    rails-assets-jquery-ui (1.11.1)
+      rails-assets-jquery (>= 1.6)
+    rails-assets-select2 (3.5.1)
+      rails-assets-jquery (>= 1.7.1)
     railties (4.1.4)
       actionpack (= 4.1.4)
       activesupport (= 4.1.4)
@@ -262,8 +254,6 @@ GEM
     sdoc (0.4.1)
       json (~> 1.7, >= 1.7.7)
       rdoc (~> 4.0)
-    select2-rails (3.5.9.1)
-      thor (~> 0.14)
     spring (1.1.3)
     sprockets (2.11.0)
       hike (~> 1.2)
@@ -294,6 +284,9 @@ GEM
     turnout (2.0.1)
       rack (~> 1.3)
       rack-accept (~> 0.4)
+    typescript-node (1.1.0)
+      typescript-src (~> 1.0.1)
+    typescript-src (1.0.1.2)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     uglifier (2.5.3)
@@ -307,9 +300,7 @@ PLATFORMS
 
 DEPENDENCIES
   angular-ui-bootstrap-rails
-  angular-ui-select2-rails!
   angularjs-rails
-  autosize-rails!
   bootstrap-sass
   cancancan (~> 1.9)
   capistrano (~> 3.1.0)
@@ -324,9 +315,6 @@ DEPENDENCIES
   dotenv-rails
   gon
   jbuilder (~> 2.0)
-  jquery-cookie-rails!
-  jquery-rails
-  jquery-ui-rails!
   kaminari
   less-rails
   mongoid!
@@ -337,6 +325,11 @@ DEPENDENCIES
   omniauth-twitter!
   puma
   rails (= 4.1.4)
+  rails-assets-angular-ui-select2
+  rails-assets-jquery
+  rails-assets-jquery-autosize
+  rails-assets-jquery-cookie
+  rails-assets-jquery-ui
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)
   spring
@@ -344,4 +337,5 @@ DEPENDENCIES
   torigoya_kit
   turbolinks
   turnout
+  typescript-rails!
   uglifier (>= 1.3.0)
