@@ -8,3 +8,9 @@ Rails.application.config.assets.version = '1.0'
 # Rails.application.config.assets.precompile += %w( search.js )
 #Rails.application.config.assets.precompile += %w( procgarden.js )
 Rails.application.config.assets.precompile += ['*.js', '*.css', '*.css.erb']
+
+Rails.application.config.assets.precompile += %w( select2/select2.png )
+Rails.application.config.assets.precompile += %w( select2/select2-spinner.gif )
+Rails.application.config.assets.precompile += %w( select2/select2x2.png )
+
+Rails.application.config.assets.precompile += %w( jquery-ui/themes/* )
