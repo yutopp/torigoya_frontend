@@ -1,11 +1,12 @@
 <!--  -->
-<accordion-group is-open="ticket.<%= mode %>.ui.is_open" class="sc-acc"
-                 ng-if="ticket.proc.selected.profile.<%- if mode == 'compile' -%>is_build_required<%- elsif mode == 'link' -%>is_link_independent<%- end -%> === true">
+<accordion-group is-open="ticket.<%= mode %>.ui.is_option_opened"
+                 class="sc-acc"
+                 ng-if="ticket.current_proc.profile.<%- if mode == 'compile' -%>is_build_required<%- elsif mode == 'link' -%>is_link_independent<%- end -%> === true">
     <accordion-heading>
         <div class="row">
             <div class="col-sm-4">
                 <h6>
-                    <span class="glyphicon glyphicon-chevron-{{ticket.<%= mode %>.ui.is_open ? 'up' : 'down'}}"></span>
+                    <span class="glyphicon glyphicon-chevron-{{ticket.<%= mode %>.ui.is_option_opened ? 'up' : 'down'}}"></span>
                     <%= mode %> <span class="label"
                                       ng-class="ticket.<%= mode %>.ui.label_style">
                         {{ticket.<%= mode %>.ui.label}}
@@ -36,43 +37,44 @@
         </div>
     </accordion-heading>
 
+
     <code class="sc-command-line"
-        <% unless readonly %>
-        <%- if mode == 'compile' -%>
-          ng-click="ticket.<%= mode %>.ui.toggle_option_collapse()"
+        <%- unless readonly -%>
+            <%- if mode == 'compile' -%>
+          ng-click="ticket.<%= mode %>.cmd_args.ui.toggle_option_opened()"
           style="cursor: pointer;"
+            <%- end -%>
         <%- end -%>
-        <% end %>
     >
-        {{make_<%= mode %>_command_line($index, <%= readonly %>)}}
+        {{ticket.<%= mode %>.make_command_line_string(<%= readonly %>)}}
     </code>
 
+
     <% unless readonly %>
-    <% if mode == 'compile' %>
-    <div class="row" ng-if="ticket.<%= mode %>.ui.should_toggle() && ticket.<%= mode %>.ui.is_option_collapsed === true">
+        {{ticket.<%= mode %>.cmd_args.has_option()}}
+        {{ticket.<%= mode %>.cmd_args.ui.is_option_opened}}
+        <div class="row"
+             ng-if="ticket.<%= mode %>.cmd_args.has_option() && ticket.<%= mode %>.cmd_args.ui.is_option_opened === true">
+
         <div class="col-sm-10">
-            <select ui-select2
-                    id="sc-<%= mode %>-options"
-                    multiple
-                    ng-model="ticket.<%= mode %>.structured_command_line.selected_with_title"
-                    ng-hoge="ticket.<%= mode %>.ui.allowed_structured_command_line"
-                    ng-options="option.title for option in ticket.<%= mode %>.ui.allowed_structured_command_line"
-                    style="width:100%;"
-                    >
-            </select>
+            <div id="sc-<%= mode %>-options"
+                 ui-select2="ticket.<%= mode %>.cmd_args.structured.select2_options"
+                 ng-model="ticket.<%= mode %>.cmd_args.structured.selected_data"
+                 style="width:100%;"
+                 >
+            </div>
         </div>
         <div class="col-sm-1">
-            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.set_default_option()">
-                default
+            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.set_default_command_line()">
+                default???
             </button>
         </div>
         <div class="col-sm-1">
-            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.clear_options()">
+            <button class="btn btn-default btn-xs" ng-click="ticket.<%= mode %>.clear_command_line()">
                 clear
             </button>
         </div>
     </div>
-    <% end %>
     <% end %>
 
 

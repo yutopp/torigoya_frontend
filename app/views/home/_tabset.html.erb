@@ -19,7 +19,7 @@
 
     <!-- tab -->
     <tab ng-repeat="ticket in tickets"
-         active="ticket.ui.is_active_tab"
+         active="ticket.tab_ui.is_active_tab"
          select="change_ticket_tab($index)"
          class="sc-ticket-tab">
         <tab-heading tooltip="{{ticket.proc.selected.title}}">

@@ -44,21 +44,19 @@
 <% unless readonly %>
 <%# For active page! %>
 <%# command lines %>
+test<br>
 
 <div class="row" ng-if="input.ui.should_toggle() && input.ui.is_option_collapsed === true">
     <div class="col-sm-10">
-        <select ui-select2
-                multiple
-                ng-model="input.structured_command_line.selected_with_title"
-                ng-hoge="input.ui.allowed_structured_command_line"
-                ng-options="option.title for option in input.ui.allowed_structured_command_line"
-                style="width:100%;"
-                >
-        </select>
+        <div ui-select2="input.ui.select2_options"
+             ng-model="input.structured_command_line.selected_with_title"
+             style="width:100%;"
+             >
+        </div>
     </div>
     <div class="col-sm-1">
         <button class="btn btn-default btn-xs" ng-click="input.set_default_option()">
-            default
+            default???
         </button>
     </div>
     <div class="col-sm-1">
@@ -74,7 +72,7 @@
                style="width:100%"
                class="form-control"
                ng-model="input.command_line"
-               placeholder='runtime command line…'>
+               placeholder='runtime command line'>
         </input>
     </div>
 </div>
@@ -135,7 +133,7 @@
                   class="form-control"
                   rows='3'
                   ng-model="input.stdin"
-                  placeholder='stdin…'>
+                  placeholder='stdin窶ｦ'>
         </textarea>
     </div>
 </div>

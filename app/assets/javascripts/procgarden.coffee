@@ -145,52 +145,9 @@ ProcGardenApp.controller(
     ]
 )
 
-class UILabel
-    constructor: () ->
-        @label_style = "label-default"
-        @label = "NotRunning"
-
-    set_ui_label: (result) =>
-        unless result?
-            @label = "NotRunning"
-            @label_style = "label-default"
-            return
-
-        switch result.status
-            when StatusConstant.MemoryLimit
-                @label = "MemoryLimitExceeded"
-                @label_style = "label-info"
-
-            when StatusConstant.CPULimit
-                @label = "TimeLimitExceeded"
-                @label_style = "label-warning"
-
-            when StatusConstant.OutputLimit
-                @label = "OutputLimit"
-                @label_style = "label-danger"
-
-            when StatusConstant.Error
-                @label = "Error"
-                @label_style = "label-danger"
-
-            when StatusConstant.InvalidCommand
-                @label = "InvalidCommand"
-                @label_style = "label-danger"
-
-            when StatusConstant.Passed
-                if result.signal? || !result.exit? || result.exit != 0
-                    @label = "RuntimeError"
-                    @label_style = "label-danger"
-                else
-                    @label = "Success"
-                    @label_style = "label-success"
-
-            when StatusConstant.UnexpectedError
-                @label = "UnexpectedError(Please report this page...)"
-                @label_style = "label-danger"
 
 
-class UIInfo extends UILabel
+class UIInfo
     constructor: () ->
         super
 
@@ -205,7 +162,15 @@ class UIInfoWithCommandLine extends UIInfo
         # used selectable command list
         @allowed_structured_command_line = []   # type: {id: <int>, title: <string>, value: <hash>{<string>: <string>}}
 
-        @is_option_collapsed = $.cookie("sc-ticket-is-compile-option-collapsed-#{@pattern_name}") == 'true'
+        @
+
+        @select2_options = {
+            multiple: true,
+            simple_tags: true,
+            tags: ['tag1', 'tag2', 'tag3', 'tag4']
+        }
+
+        new ProcGarden.CommandLine();
 
     # update selectable allowed command line for UI
     set_allowed_structured_command_line: (allowed_command_line) =>
@@ -307,22 +272,12 @@ class ProcHolder
 
 ##########
 #
-class StructuredCommandLine
-    constructor: () ->
-        #
-        @selected_with_title = []
-        #
-        @body = []
-
-
-##########
-#
 class ResultWithUIandCommandLine extends Result
     constructor: (proc, ui, default_val = null) ->
         super
         @proc = proc
         @ui = ui
-        @structured_command_line = new StructuredCommandLine
+        @structured_command_line = new ProcGarden.StructuredCommandLine
         @command_line = if default_val?.command_line? then default_val.command_line else ""
 
         @pattern_name = ui.pattern_name
@@ -345,45 +300,8 @@ class ResultWithUIandCommandLine extends Result
         @update_allowed_command_line()
         @load_structured_command_line()
 
-    ##########
-    update_allowed_command_line: () =>
-        @clear_options()
 
-        allowed_command_line = @proc.selected?.profile?[@pattern_name]?.allowed_command_line
 
-        # update selectable allowed command line for UI
-        @ui.set_allowed_structured_command_line(allowed_command_line)
-
-    ##########
-    save_structured_command_line: (new_value, do_save_to_cookie) =>
-        # console.log "ticket", ticket
-        # ticket.compiletime_structured_command_line = []
-        # console.log "tickets[selected_tab_index].compiletime_structured_command_line_with_title", new_value
-
-        # copy shown structured command line to ACCUTUAL structured command line
-        @structured_command_line.body = (option.value for option in new_value)
-        console.log @structured_command_line.body
-
-        # save to cookie related with language_id and version
-        if do_save_to_cookie
-            $.cookie(@_make_cookie_tag(), JSON.stringify(new_value))
-        # console.log JSON.stringify(new_value)
-
-    ##########
-    load_structured_command_line: () =>
-        @clear_options()
-
-        # console.log "selected!", li, lv
-        if $.cookie(@_make_cookie_tag())?
-            options = JSON.parse($.cookie(@_make_cookie_tag()))
-            # console.log "options #{options}"
-            for option in options
-                # push only valid options
-                for t_opt in @ui.allowed_structured_command_line when t_opt.title == option.title
-                    @structured_command_line.selected_with_title.push(t_opt)
-
-        else
-            @set_default_option()
 
     ##########
     generate_structured_command_line: (gen) =>
@@ -398,27 +316,7 @@ class ResultWithUIandCommandLine extends Result
                     @_search_titled_command(item_title)
                     )
 
-    ##########
-    set_default_option: () =>
-        allowed_command_line = @proc.selected?.profile?.compile?.allowed_command_line
-        unless allowed_command_line?
-            return
 
-        @clear_options()
-
-        for key, value of allowed_command_line
-            if value?.select?
-                for item in value.select
-                    if value.default?
-                        if ( value.default instanceof Array && item in value.default ) or item == value.default
-                            list_item = []
-                            for t_opt in @ui.allowed_structured_command_line when t_opt.title == "#{key}#{item}"
-                                @structured_command_line.selected_with_title.push(t_opt)
-
-    ##########
-    clear_options: () =>
-        @structured_command_line.selected_with_title = []
-        @structured_command_line.body = []
 
 
     ##########
@@ -527,7 +425,8 @@ class Ticket
     append_input: (default_val=null) =>
         # set all status of tabs to disable
         for input in @inputs
-            input.ui.is_active_tab = false
+            input.tab_ui.inactivate()
+
         # input format
         i = new Input(@proc, default_val)
         @inputs.push(i)
@@ -538,7 +437,7 @@ class Ticket
         for i_data in inputs_data
             @append_input(i_data)
         for input in @inputs
-            input.ui.is_active_tab = false
+            input.tab_ui.inactivate()
         @inputs.is_active_tab = true
 
     ##########
@@ -549,7 +448,6 @@ class Ticket
 
         switch phase
             when PhaseConstant.Waiting
-
                 @ui.phase_label = "Waiting..."
                 @ui.phase_label_style = "label-info"
 
@@ -611,59 +509,6 @@ class Ticket
             input.refresh_command_line()
 
 
-# ==================================================
-#
-# ==================================================
-class ProcProfile
-    constructor: (description, hash) ->
-        @description = description
-        @proc_version = hash.Version
-        @is_build_required = hash.IsBuildRequired
-        @is_link_independent = hash.IsLinkIndependent
-        @source = if hash.Source? then new PhaseDetail(hash.Source) else null
-        @compile = if hash.Compile? then new PhaseDetail(hash.Compile) else null
-        @link = if hash.Link? then new PhaseDetail(hash.Link) else null
-        @run = if hash.Run? then new PhaseDetail(hash.Run) else null
-
-    proc_id: () =>
-        return @description.id
-
-    name: () =>
-        return @description.name
-
-    runnable: () =>
-        return @description.runnable
-
-class ProcDescription
-    constructor: (hash) ->
-        @id = hash.Id
-        @name = hash.Name
-        @runnable = hash.Runnable
-        @path = hash.Path
-
-class SelectableCommand
-    constructor: (hash) ->
-        @default = hash.Default
-        @select = hash.Select
-
-class PhaseDetail
-    constructor: (hash) ->
-        @file = hash.File
-        @extention = hash.Extention
-        @command = hash.Command
-        @env = hash.Env
-        @extention = null
-        @allowed_command_line = hash.AllowedCommandLine
-        for key, value of @allowed_command_line
-            @allowed_command_line[key] = new SelectableCommand(value)
-        f = []
-        if hash.FixedCommandLine?
-            for cmd in hash.FixedCommandLine
-                if cmd.length == 1
-                    f.push "#{cmd[0]}"
-                else if cmd.length == 2
-                    f.push "#{cmd[0]}#{cmd[1]}"
-        @fixed_command_line = f.join(' ')
 
 # ==================================================
 # ==================================================
@@ -681,23 +526,36 @@ ProcGardenApp.controller(
         $scope.create_proc_list = () ->
             # gon.proc_table is set by controller
             # data type is hash and defined in torigoya cage
+
+            # initialize
+            $scope.procs = []
+            $scope.procs_group = {}
+
+            #
             i = 0
             for proc_id, proc_config_unit of gon.proc_table
-                description = new ProcDescription(proc_config_unit.Description)
+                description = new ProcGarden.ProcDescription(proc_config_unit.Description)
                 proc_profile_table = proc_config_unit.Versioned
                 for proc_version, proc_profile of proc_profile_table
-                    $scope.procs.push {
+                    proc = {
                         id: i,
                         value: {proc_id: parseInt(proc_id, 10), proc_version: proc_version},
                         title: "#{description.name} - #{proc_version}",
                         group: description.name,
-                        profile: new ProcProfile(description, proc_profile)
+                        profile: new ProcGarden.ProcProfile(description, proc_profile)
                     }
+
+                    $scope.procs.push proc
+
+                    $scope.procs_group[description.name] = $scope.procs_group[description.name] || [];
+                    $scope.procs_group[description.name].push(proc)
                     i = i + 1
 
         # Language Processor List...
         $scope.procs = []
+        $scope.procs_group = {}
         $scope.create_proc_list()
+
 
         #
         $scope.submit_able = true
@@ -741,58 +599,66 @@ ProcGardenApp.controller(
         ########################################
         # change editor highlight by selected item
         $scope.$watchCollection(
-            'tickets[selected_tab_index].proc.selected',
-            (new_value, old_value) =>
+            'tickets[selected_tab_index].data.selected_proc_id',
+            (new_id, old_id) =>
                 # console.log old_value, new_value
-                if ! new_value?
+                unless new_id?
                     $scope.submit_able = false
                     return
                 $scope.submit_able = true
 
-                (new CodemirrorEditor).set_highlight(new_value.title)
+                # new_proc: ProcGarden.Proc
+                new_proc = $scope.procs[new_id]
+
+                (new CodemirrorEditor).set_highlight(new_proc.title)
                 # console.log new_value
                 # console.log $scope.selected_tab_index
                 if $scope.do_save_cookie
-                    $.cookie("sc-editor-cached-language-title", new_value.title)
-
-                if new_value == old_value
-                    return
+                    $.cookie("sc-editor-cached-language-title", new_proc.title)
 
                 selected_ticket = $scope.tickets[$scope.selected_tab_index]
-                old_proc_value = selected_ticket?.proc.selected_value # proc.selected is change automatialy(by Angular), but proc.selected_value contains old value!
+                unless selected_ticket?
+                    return
+                old_proc = selected_ticket.current_proc
 
-                console.log new_value
-                selected_ticket.propagate_proc(new_value)
+                selected_ticket.change_proc(new_proc)
 
-                # console.error "changed", $scope.tickets[$scope.selected_tab_index].current_proc_value, new_value
-                # change if diffed
-                if new_value.value != old_proc_value
-                    selected_ticket.refresh_command_line()
+                if new_proc.id != old_proc.id
+                    selected_ticket.refresh_command_lines()
         )
 
 
         #
         $scope.$watchCollection(
-            'tickets[selected_tab_index].compile.structured_command_line.selected_with_title',
+            'tickets[selected_tab_index].compile.cmd_args.structured.selected_data',
             (new_value)=>
                 unless new_value?
                     return
 
                 ticket = $scope.tickets[$scope.selected_tab_index]
-                ticket.compile.save_structured_command_line(new_value, $scope.do_save_cookie)
+                ticket.compile.cmd_args.structured.save($scope.do_save_cookie)
         )
-
-        # TODO: add watch for link
 
         #
         $scope.$watchCollection(
-            'tickets[selected_tab_index].inputs[selected_input_tab_index].structured_command_line.selected_with_title',
+            'tickets[selected_tab_index].link.cmd_args.structured.selected_data',
+            (new_value)=>
+                unless new_value?
+                    return
+
+                ticket = $scope.tickets[$scope.selected_tab_index]
+                ticket.link.cmd_args.structured.save($scope.do_save_cookie)
+        )
+
+        #
+        $scope.$watchCollection(
+            'tickets[selected_tab_index].inputs[selected_input_tab_index].cmd_args.structured.selected_data',
             (new_value)=>
                 unless new_value?
                     return
 
                 input = $scope.tickets[$scope.selected_tab_index].inputs[$scope.selected_input_tab_index]
-                input.save_structured_command_line(new_value, $scope.do_save_cookie)
+                input.cmd_args.structured.save($scope.do_save_cookie)
         )
 
 
@@ -815,6 +681,7 @@ ProcGardenApp.controller(
                     # find c++(gcc)
                     default_proc = p for p in $scope.procs when p.profile.proc_id == 100 && p.profile.proc_version == "4.8.2"
                     return default_proc ? $scope.procs[0]
+
             catch error
                 return $scope.procs[0] # default value
 
@@ -824,12 +691,13 @@ ProcGardenApp.controller(
         #
         $scope.append_ticket = () =>
             for ticket in $scope.tickets
-                ticket.ui.is_active_tab = false
+                ticket.tab_ui.inactivate()
 
+            # type: ProcGarden.Proc
             default_proc = $scope.select_default_language()
 
             # ticket format
-            ticket = new Ticket(default_proc)
+            ticket = new ProcGarden.Ticket(default_proc)
             $scope.tickets.push(ticket)
 
             # the ticket must has inputs at least one.
@@ -839,8 +707,8 @@ ProcGardenApp.controller(
         #
         $scope.force_set_ticket_tab_index = (ticket_index) =>
             for ticket in $scope.tickets
-                ticket.ui.is_active_tab = false
-            $scope.tickets[ticket_index].ui.is_active_tab = true
+                ticket.tab_ui.inactivate()
+            $scope.tickets[ticket_index].tab_ui.activate()
 
 
         ########################################
@@ -1083,7 +951,7 @@ ProcGardenApp.controller(
                     Path: "???"
                 })
 
-                profile = new ProcProfile(dummy_description, {
+                profile = new ProcGarden.ProcProfile(dummy_description, {
                     Version: "UNSUPPORTED",
                     IsBuildRequired: true,
                     IsLinkIndependent: true,
