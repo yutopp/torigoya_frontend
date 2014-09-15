@@ -27,6 +27,8 @@ class Ticket
   include Mongoid::Document
   belongs_to :entry, :inverse_of => :tickets
 
+  field :index, :type => Integer
+
   field :is_running, :type => Boolean
   field :processed, :type => Boolean
 

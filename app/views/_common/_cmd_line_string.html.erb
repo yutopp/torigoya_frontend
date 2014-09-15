@@ -1,0 +1,8 @@
+<code class="sc-command-line"
+    <%- unless readonly -%>
+      ng-click="<%= obj %>.cmd_args.ui.toggle_option_opened()"
+      style="cursor: pointer;"
+    <%- end -%>
+      >
+    {{<%= obj %>.make_command_line_string(<%= readonly %>)}}
+</code>

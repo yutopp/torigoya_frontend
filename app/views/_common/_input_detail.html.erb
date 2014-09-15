@@ -3,153 +3,92 @@
     <div class="col-sm-4">
         <h5>
             <span class="label"
-                  ng-class="input.ui.label_style">
-                {{input.ui.label}}
+                  ng-class="input.status_ui.label_style">
+                {{input.status_ui.label}}
             </span>
         </h5>
     </div>
-    <div class="col-sm-1 text-center">
-        <h6 tooltip="ExitCode" tooltip-append-to-body="true" tooltip-placement="bottom" style="{{input.exit != 0 ? 'color: red;' : ''}}">
-            {{input.exit}}
-        </h6>
-    </div>
-    <div class="col-sm-1 text-center">
-        <h6 tooltip="Signal" tooltip-append-to-body="true" tooltip-placement="bottom">
-            {{input.signal == null ? "(none)" : input.signal}}
-        </h6>
-    </div>
-    <div class="col-sm-3 text-center">
-        <h6 tooltip="CPU" tooltip-append-to-body="true" tooltip-placement="bottom">
-            {{input.cpu.toFixed(4)}}/{{input.cpu_limit}}[sec]
-        </h6>
-    </div>
-    <div class="col-sm-3 text-center">
-        <h6 tooltip="Memory" tooltip-append-to-body="true" tooltip-placement="bottom">
-            {{mem_dc(input.memory)}}/{{mem_dc(input.memory_limit)}}[KB]
-        </h6>
-    </div>
+
+    <%= render :partial => '_common/result_status_line', :locals => {
+      :obj => "input"
+    } %>
 </div>
 <!-- /resource -->
 
-<code class="sc-command-line"
-    <% unless readonly %>
-      ng-click="input.ui.toggle_option_collapse()"
-      style="cursor: pointer;"
-    <% end %>
->
-    {{make_run_command_line(selected_tab_index, $index, <%= readonly %>)}}
-</code>
+
+<%# command line %>
+<%= render :partial => '_common/cmd_line_string', :locals => {
+    :obj => "input",
+    :readonly => readonly
+} %>
 
 
 <% unless readonly %>
-<%# For active page! %>
-<%# command lines %>
-test<br>
+    <%# For active page! %>
+    <%= render :partial => '_common/structured_cmd_line', :locals => {
+        :obj => "input"
+    } %>
 
-<div class="row" ng-if="input.ui.should_toggle() && input.ui.is_option_collapsed === true">
-    <div class="col-sm-10">
-        <div ui-select2="input.ui.select2_options"
-             ng-model="input.structured_command_line.selected_with_title"
-             style="width:100%;"
-             >
+    <div class="row"
+         ng-if="input.cmd_args.ui.is_option_opened === true">
+        <div class="col-sm-12">
+            <input type='text'
+                   style="width:100%"
+                   class="form-control"
+                   ng-model="input.cmd_args.freed"
+                   placeholder='runtime command line'>
+            </input>
         </div>
     </div>
-    <div class="col-sm-1">
-        <button class="btn btn-default btn-xs" ng-click="input.set_default_option()">
-            default???
-        </button>
-    </div>
-    <div class="col-sm-1">
-        <button class="btn btn-default btn-xs" ng-click="input.clear_options()">
-            clear
-        </button>
-    </div>
-</div>
-
-<div class="row" ng-if="input.ui.is_option_collapsed === true">
-    <div class="col-sm-12">
-        <input type='text'
-               style="width:100%"
-               class="form-control"
-               ng-model="input.command_line"
-               placeholder='runtime command line'>
-        </input>
-    </div>
-</div>
 
 <% else %>
-<%# For entry page! %>
+    <%# For entry page! %>
 
-<div class="row" ng-if="input.command_line.length>0">
-    <div class="col-sm-12">
-        <input type='text'
-               style="width:100%"
-               class="form-control"
-               ng-model="input.command_line"
-               readonly>
-        </input>
+    <div class="row" ng-if="input.cmd_args.freed>0">
+        <div class="col-sm-12">
+            <input type='text'
+                   style="width:100%"
+                   class="form-control"
+                   ng-model="input.cmd_args.freed"
+                   readonly>
+            </input>
+        </div>
     </div>
-</div>
 <% end %>
 
 
-<%#  %>
-<div class="row" ng-if="input.stdout.length>0">
-    <div class="col-sm-12" class="sc-output-layout">
-        <span class="sc-output-t sc-std" ng-hide="input.ui.tip_stdout">stdout</span>
-        <textarea scroll-glue
-                  ng-model="input.stdout"
-                  ng-mouseover="input.ui.tip_stdout=true"
-                  ng-mouseleave="input.ui.tip_stdout=false"
-                  class="sc-output sc-std"
-                  rows="8"
-                  readonly
-                  wrap="{{input.ui.wrap}}">{{input.stdout}}</textarea>
-    </div>
-</div>
-
-<div class="row" ng-if="input.stderr.length>0">
-    <div class="col-sm-12" class="sc-output-layout">
-        <span class="sc-output-t sc-err" ng-hide="input.ui.tip_stderr">stderr</span>
-        <textarea scroll-glue
-                  ng-model="input.stderr"
-                  ng-mouseover="input.ui.tip_stderr=true"
-                  ng-mouseleave="input.ui.tip_stderr=false"
-                  class="sc-output sc-err"
-                  rows="8"
-                  readonly
-                  wrap="{{input.ui.wrap}}">{{input.stderr}}</textarea>
-    </div>
-</div>
+<%# outputs %>
+<%= render :partial => '_common/standard_outputs', :locals => {
+    :obj => "input"
+} %>
 
 
 <% unless readonly %>
-<%# For active page! %>
-<%# stdin %>
+    <%# For active page! %>
 
-<div class="row">
-    <div class="col-sm-12">
-        <textarea style="width:100%"
-                  class="form-control"
-                  rows='3'
-                  ng-model="input.stdin"
-                  placeholder='stdin窶ｦ'>
-        </textarea>
+    <%# stdin %>
+    <div class="row">
+        <div class="col-sm-12">
+            <textarea style="width:100%"
+                      class="form-control"
+                      rows='3'
+                      ng-model="input.stdin"
+                      placeholder='stdin…'>
+            </textarea>
+        </div>
     </div>
-</div>
 
 <% else %>
-<%# For entry page! %>
+    <%# For entry page! %>
 
-<div class="row" ng-if="input.stdin>0">
-    <div class="col-sm-12">
-        <textarea style="width:100%"
-                  class="form-control"
-                  rows='3'
-                  ng-model="input.stdin"
-                  readonly>
-        </textarea>
+    <div class="row" ng-if="input.stdin>0">
+        <div class="col-sm-12">
+            <textarea style="width:100%"
+                      class="form-control"
+                      rows='3'
+                      ng-model="input.stdin"
+                      readonly>
+            </textarea>
+        </div>
     </div>
-</div>
-
 <% end %>

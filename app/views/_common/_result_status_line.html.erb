@@ -1,0 +1,32 @@
+<div class="col-sm-1 text-center">
+    <h6 tooltip="ExitCode"
+        tooltip-append-to-body="true"
+        tooltip-placement="bottom"
+        style="{{<%= obj %>.result.exit != 0 ? 'color: red;' : ''}}">
+        {{<%= obj %>.result.exit}}
+    </h6>
+</div>
+
+<div class="col-sm-1 text-center">
+    <h6 tooltip="Signal"
+        tooltip-append-to-body="true"
+        tooltip-placement="bottom">
+        {{<%= obj %>.result.signal == null ? "(none)" :<%= obj %>.result.signal}}
+    </h6>
+</div>
+
+<div class="col-sm-3 text-center">
+    <h6 tooltip="CPU"
+        tooltip-append-to-body="true"
+        tooltip-placement="bottom">
+        {{<%= obj %>.result.cpu.toFixed(4)}}/{{<%= obj %>.result.cpu_limit}}[sec]
+    </h6>
+</div>
+
+<div class="col-sm-3 text-center">
+    <h6 tooltip="Memory"
+        tooltip-append-to-body="true"
+        tooltip-placement="bottom">
+        {{mem_dc(<%= obj %>.result.memory)}}/{{mem_dc(<%= obj %>.result.memory_limit)}}[KB]
+    </h6>
+</div>

@@ -4,7 +4,7 @@
         <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
 
 int main() {
-    std::cout << "Hello world!" << std::endl;
+    std::cout << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
 }</textarea>
     </div>
 </div>

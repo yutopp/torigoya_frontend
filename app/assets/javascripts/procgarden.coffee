@@ -211,7 +211,7 @@ class UIInfoWithCommandLine extends UIInfo
 # https://developer.mozilla.org/ja/docs/Web/API/window.btoa#Unicode_Strings
 b64_to_utf8 = (str) =>
     try
-        return decodeURIComponent(escape(window.atob(str)))
+        return decodeURIComponent(encodeURI(window.atob(str)))
     catch e
         return window.atob(str)
 
@@ -728,7 +728,6 @@ ProcGardenApp.controller(
         ########################################
         # phase 1
         $scope.submit_all = () =>
-            #####
             $scope.is_running = true
             $scope.reset_entry()
 
@@ -736,11 +735,9 @@ ProcGardenApp.controller(
             source_code = (new CodemirrorEditor).get_value()
             # console.log source_code
 
-
             for ticket in $scope.tickets
                 console.log
 
-            #####
             # !!!! construct POST data
             raw_submit_data = {
                 description: "",
@@ -749,30 +746,29 @@ ProcGardenApp.controller(
                     source_code
                 ],
                 tickets: ({
-                    proc_id: ticket.proc.selected.value.proc_id,
-                    proc_version: ticket.proc.selected.value.proc_version,
+                    proc_id: ticket.current_proc.value.proc_id,
+                    proc_version: ticket.current_proc.value.proc_version,
                     do_execution: ticket.do_execution,
                     compile: {
-                        structured_command_line: ticket.compile.structured_command_line.body,
+                        structured_command_line: ticket.compile.cmd_args.structured.to_valarray(),
                     },
                     link: {
-                        structured_command_line: ticket.link.structured_command_line.body,
+                        structured_command_line: ticket.link.cmd_args.structured.to_valarray(),
                     },
                     inputs: ({
-                        command_line: input.command_line,
-                        structured_command_line: input.structured_command_line.body,
+                        structured_command_line: input.cmd_args.structured.to_valarray(),
+                        command_line: input.cmd_args.freed,
                         stdin: input.stdin
                     } for input in ticket.inputs)
                 } for ticket in $scope.tickets)
             }
-
 
             submit_data = {
                 api_version: 1,
                 type: "json",
                 value: JSON.stringify(raw_submit_data)
             }
-            console.log submit_data
+            console.log "submit => ", submit_data
 
             # submit!
             $.post("/api/source", submit_data, "json")
@@ -827,12 +823,13 @@ ProcGardenApp.controller(
 
                             # console.log data.ticket.num
                             # apply for all tickets
-                            for i in [0...ticket_ids.length]
-                                console.log i, ticket_ids[i]
+                            ticket_ids.forEach((ticket_id) =>
                                 # set processing flag
-                                $scope.tickets[i].is_processing = true
+                                # $scope.tickets[i].is_processing = true
                                 # make handler for get ticket data per ticket
-                                $scope.wait_ticket_for_update(i, ticket_ids[i], with_init)
+                                $scope.wait_ticket_for_update(ticket_id, with_init)
+                            )
+
                 .fail () =>
                     $rootScope.$apply () =>
                         alert("Failed[2]")
@@ -841,7 +838,8 @@ ProcGardenApp.controller(
 
         ########################################
         # phase 3
-        $scope.wait_ticket_for_update = (ticket_index, ticket_id, with_init = false) =>
+        $scope.wait_ticket_for_update = (ticket_id, with_init = false) =>
+            console.log "get=>", ticket_id
             $.get("/api/ticket/#{ticket_id}", "json")
                 .done (data) =>
                     # console.log( "Data Loaded: " + JSON.stringify(data) )
@@ -851,13 +849,14 @@ ProcGardenApp.controller(
                             $scope.finish_ticket()
                         else
                             ticket_model = data.ticket
+                            ticket_index = ticket_model.index
                             console.log "Ticket Loaded: " + JSON.stringify(ticket_model)
 
                             if with_init
                                 $scope.load_ticket_profile(ticket_index, ticket_model)
 
-                            $scope.bind_ticket_data(ticket_index, ticket_id, ticket_model)
-                            $scope.tickets[ticket_index].set_phase(ticket_model["phase"])
+                            #
+                            $scope.tickets[ticket_index].update(ticket_model)
 
                             console.log "ticket", ticket_index, ticket_model
 
@@ -865,9 +864,9 @@ ProcGardenApp.controller(
                                 # set processing flag
                                 $scope.tickets[ticket_index].is_processing = true
                                 if $scope.selected_tab_index == ticket_index
-                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_index, ticket_id) ), 200 ) # recursive call
+                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id) ), 200 ) # recursive call
                                 else
-                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_index, ticket_id) ), 2000 ) # recursive call
+                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id) ), 2000 ) # recursive call
                             else
                                 # set processing flag
                                 $scope.finish_ticket(ticket_index)
@@ -875,43 +874,6 @@ ProcGardenApp.controller(
                     $rootScope.$apply () =>
                         alert("Failed[3]")
                         $scope.finish_ticket()
-
-
-        ########################################
-        #
-        $scope.bind_ticket_data = (ticket_index, ticket_id, ticket_model) =>
-            ######
-            # build
-            if ticket_model.compile_state?
-                $scope.tickets[ticket_index].compile.set_result(ticket_model.compile_state)
-
-            if ticket_model.link_state?
-                $scope.tickets[ticket_index].link.set_result(ticket_model.link_state)
-
-
-            # console.log data.phase, @PhaseRunning
-
-            ######
-            # run
-            # -> update per input
-            if ticket_model.phase >= @PhaseRunning
-                if ticket_model.run_states?
-                    for run_state in ticket_model.run_states
-                        console.log run_state
-                        # console.log "out => #{result.record.out}, #{ticket_index} / #{input_index}"
-                        # console.log "!=> #{$scope.tickets[ticket_index].inputs[input_index].stdout}"
-                        #
-                        $scope.tickets[ticket_index].inputs[run_state.index].stopped
-                        $scope.tickets[ticket_index].inputs[run_state.index].set_result(run_state)
-
-                        #else
-                        #    $scope.tickets[ticket_index].inputs[input_index].running
-
-
-                    #
-                    #$scope.tickets[ticket_index].inputs[input_index].stdin = input.stdin
-                    #$scope.tickets[ticket_index].inputs[input_index].runtime_command_line = input.command_line
-                    #$scope.tickets[ticket_index].inputs[input_index].runtime_structured_command_line = input.structured_command_line
 
 
         ########################################

@@ -1,0 +1,31 @@
+<%# stdout %>
+<div class="row" ng-if="<%= obj %>.result.stdout.length>0">
+    <div class="col-sm-12"
+         class="sc-output-layout">
+        <span class="sc-output-t sc-std" ng-hide="<%= obj %>.ui.tip_stdout">stdout</span>
+        <textarea scroll-glue
+                  ng-model="<%= obj %>.result.stdout"
+                  ng-mouseover="<%= obj %>.ui.tip_stdout=true"
+                  ng-mouseleave="<%= obj %>.ui.tip_stdout=false"
+                  class="sc-output sc-std"
+                  rows="8"
+                  readonly
+                  wrap="{{<%= obj %>.ui.wrap_strout}}">{{<%= obj %>.result.stdout}}</textarea>
+    </div>
+</div>
+
+<%# stderr %>
+<div class="row" ng-if="<%= obj %>.result.stderr.length>0">
+    <div class="col-sm-12"
+         class="sc-output-layout">
+        <span class="sc-output-t sc-err" ng-hide="<%= obj %>.ui.tip_stderr">stderr</span>
+        <textarea scroll-glue
+                  ng-model="<%= obj %>.result.stderr"
+                  ng-mouseover="<%= obj %>.ui.tip_stderr=true"
+                  ng-mouseleave="<%= obj %>.ui.tip_stderr=false"
+                  class="sc-output sc-err"
+                  rows="8"
+                  readonly
+                  wrap="{{<%= obj %>.ui.wrap_strout}}">{{<%= obj %>.result.stderr}}</textarea>
+    </div>
+</div>

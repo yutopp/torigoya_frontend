@@ -1,0 +1,26 @@
+<div class="row"
+     ng-if="<%= obj %>.cmd_args.has_option() && <%= obj %>.cmd_args.ui.is_option_opened === true">
+
+    <%# structured command line %>
+    <div class="col-sm-10">
+        <div ui-select2="<%= obj %>.cmd_args.structured.select2_options"
+             ng-model="<%= obj %>.cmd_args.structured.selected_data"
+             style="width:100%;"
+             >
+        </div>
+    </div>
+
+    <div class="col-sm-1">
+        <button class="btn btn-default btn-xs"
+                ng-click="<%= obj %>.set_default_command_line()">
+            default
+        </button>
+    </div>
+
+    <div class="col-sm-1">
+        <button class="btn btn-default btn-xs"
+                ng-click="<%= obj %>.clear_command_line()">
+            clear
+        </button>
+    </div>
+</div>

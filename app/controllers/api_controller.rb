@@ -141,6 +141,91 @@ class ApiController < ApplicationController
                                              )
   end
 
+  class ExecutableTicketInfo
+    def initialize(index, kit)
+      @index = index    # int
+      @kit = kit        # TorigoyaKit::Ticket
+    end
+    attr_reader :index, :kit
+  end
+
+  class NoExecutableTicketInfo
+    def initialize(index, proc_id, proc_version, compile_inst, link_inst)
+      @index = index
+      @proc_id = proc_id
+      @proc_version = proc_version
+      @compile_inst = compile_inst
+      @link_inst = link_inst
+    end
+    attr_reader :index, :proc_id, :proc_version
+    attr_reader :compile_inst, :link_inst
+  end
+
+  def load_tickets_info(value, source_codes)
+    tickets_data = validate_array(value, "tickets", 1, 10)
+    tickets = tickets_data.map.with_index do |ticket, index|
+      proc_id = validate_type(ticket, "proc_id", Integer)
+      proc_version = validate_type(ticket, "proc_version", String)
+      do_execution = validate_type(ticket, "do_execution", Boolean)
+
+      ##### ========================================
+      ##### compile
+      ##### ========================================
+      compile = if ticket.has_key?("compile")
+                  parse_execution_settings(ticket["compile"], :compile)
+                else
+                  nil
+                end
+
+      ##### ========================================
+      ##### link
+      ##### ========================================
+      link = if ticket.has_key?("link")
+               parse_execution_settings(ticket["link"], :link)
+             else
+               nil
+             end
+
+      ##### ========================================
+      ##### build inst
+      ##### ========================================
+      build_inst = unless compile.nil? && link.nil?
+                     TorigoyaKit::BuildInstruction.new(compile, link)
+                   else
+                     nil
+                   end
+
+      ##### ========================================
+      ##### inputs
+      ##### ========================================
+      inputs_data = validate_array(ticket, "inputs", 1, 10)
+      inputs = inputs_data.map.with_index do |input, index|
+        stdin = TorigoyaKit::SourceData.new(index.to_s, validate_type(input, "stdin", String))
+        run = parse_execution_settings(input, :run)
+        next TorigoyaKit::Input.new(stdin, run)
+      end
+
+      #
+      if do_execution
+        ##### ========================================
+        ##### run inst
+        ##### ========================================
+        run_inst = TorigoyaKit::RunInstruction.new(inputs)
+
+        base_name = Digest::MD5.hexdigest("#{proc_id}/#{proc_version}/#{source_codes}/#{Time.now}") + SecureRandom.hex(16)
+
+        #
+        kit = TorigoyaKit::Ticket.new(base_name, proc_id, proc_version, source_codes, build_inst, run_inst)
+        next ExecutableTicketInfo.new(index, kit)
+
+      else
+        next NoExecutableTicketInfo.new(index, proc_id,  proc_version, compile, link)
+      end
+    end # tickets_data.map
+
+    return tickets
+  end
+
   def post_source_v1
     # ========================================
     # type
@@ -214,99 +299,40 @@ class ApiController < ApplicationController
     ### ========================================
     ### tickets
     ### ========================================
-    tickets_data = validate_array(value, "tickets", 1, 10)
-    tickets = tickets_data.map do |ticket|
-      proc_id = validate_type(ticket, "proc_id", Integer)
-      proc_version = validate_type(ticket, "proc_version", String)
-      do_execution = validate_type(ticket, "do_execution", Boolean)
-
-      ##### ========================================
-      ##### compile
-      ##### ========================================
-      compile = if ticket.has_key?("compile")
-                  parse_execution_settings(ticket["compile"], :compile)
-                else
-                  nil
-                end
-
-      ##### ========================================
-      ##### link
-      ##### ========================================
-      link = if ticket.has_key?("link")
-               parse_execution_settings(ticket["link"], :link)
-             else
-               nil
-             end
-
-      ##### ========================================
-      ##### build inst
-      ##### ========================================
-      build_inst = unless compile.nil? && link.nil?
-                     TorigoyaKit::BuildInstruction.new(compile, link)
-                   else
-                     nil
-                   end
-
-      ##### ========================================
-      ##### inputs
-      ##### ========================================
-      inputs_data = validate_array(ticket, "inputs", 1, 10)
-      inputs = inputs_data.map.with_index do |input, index|
-        stdin = TorigoyaKit::SourceData.new(index.to_s, validate_type(input, "stdin", String))
-        run = parse_execution_settings(input, :run)
-        next TorigoyaKit::Input.new(stdin, run)
-      end
-
-
-      if do_execution
-        ##### ========================================
-        ##### run inst
-        ##### ========================================
-        run_inst = TorigoyaKit::RunInstruction.new(inputs)
-
-        base_name = Digest::MD5.hexdigest("#{proc_id}/#{proc_version}/#{source_codes}/#{Time.now}") + SecureRandom.hex(16)
-        next TorigoyaKit::Ticket.new(base_name, proc_id, proc_version, source_codes, build_inst, run_inst)
-
-      else
-        next {
-          proc_id: proc_id,
-          proc_version: proc_version,
-          compile_inst: compile,
-          link_inst: link,
-          inputs: inputs
-        }
-      end
-    end # tickets_data.map
+    tickets_info = load_tickets_info(value, source_codes)
 
     #
-    tickets.each do |t|
-      if t.is_a?(TorigoyaKit::Ticket)
+    tickets_info.each do |t|
+      if t.is_a?(ExecutableTicketInfo)
         # do execution
-        m = entry.tickets.build(:is_running => true,
-                                :processed => false,
-                                :do_execute => true,
-                                :proc_id => t.proc_id,
-                                :proc_version => t.proc_version,
-                                :proc_label => "",
-                                :phase => Phase::Waiting
-                                )
-        m.save!
+        model = entry.tickets.build(:index => t.index,
+                                    :is_running => true,
+                                    :processed => false,
+                                    :do_execute => true,
+                                    :proc_id => t.kit.proc_id,
+                                    :proc_version => t.kit.proc_version,
+                                    :proc_label => "",
+                                    :phase => Phase::Waiting
+                                    )
+        model.save!
 
-        execute_and_update_ticket(t, m)
+        # execute!
+        execute_and_update_ticket(t.kit, model)
 
       else
         # do NOT execution
-        m = entry.tickets.build(:is_running => false,
-                                :processed => true,
-                                :do_execute => false,
-                                :proc_id => t.proc_id,
-                                :proc_version => t.proc_version,
-                                :proc_label => "",
-                                :phase => Phase::NotExecuted
-                                )
-        m.save!
+        model = entry.tickets.build(:index => t.index,
+                                    :is_running => false,
+                                    :processed => true,
+                                    :do_execute => false,
+                                    :proc_id => t.proc_id,
+                                    :proc_version => t.proc_version,
+                                    :proc_label => "",
+                                    :phase => Phase::NotExecuted
+                                    )
+        model.save!
       end
-    end
+    end # tickets.each
 
     entry.save!
 

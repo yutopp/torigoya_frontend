@@ -1,6 +1,54 @@
 /// <reference path="typings/jquery.cookie/jquery.cookie.d.ts"/>
+/// <reference path="base64_utf8.ts"/>
 
 module ProcGarden {
+    function b64_to_utf8(str: string) {
+        try {
+            return UTF8ArrToStr(base64DecToArr(str));
+        } catch(e) {
+            return window.atob(str);
+        }
+    }
+
+    export module Model {
+        export interface Ticket {
+            index: number;
+
+            is_running: boolean;
+            processed: boolean;
+            do_execute: boolean;
+            proc_id: number;
+            proc_version: string;
+            proc_label: string;
+
+            phase: number;
+
+            compile_state: Status;
+            link_state: Status;
+            run_states: Array<Status>;
+        }
+
+        export interface Status {
+            index: number;
+
+            type: number;
+
+            used_cpu_time_sec: number;
+            used_memory_bytes: number;
+            signal: number;
+            return_code: number;
+            command_line: string;
+            status: number;
+            system_error_message: string;
+
+            structured_command_line: any;
+
+            out: string;
+            err: string;
+        }
+    }
+
+
     //
     export class ProcProfile {
         constructor(description: ProcDescription, hash: any) {
@@ -123,6 +171,57 @@ module ProcGarden {
 
     //
     export class ResultHolder {
+        constructor() {
+            this.status = null;
+            this.signal = null;
+            this.exit = null;
+
+            this.stdout = "";
+            this.stderr = "";
+            this.cpu = 0;
+            this.memory = 0;
+            this.command = "";
+
+            this.cpu_limit = 0;
+            this.memory_limit = 0;
+        }
+
+        public reset() {
+            this.status = null;
+            this.signal = null;
+            this.exit = null;
+
+            this.stdout = (this.stdout != null && this.stdout.length > 0) ? " " : "";
+            this.stderr = (this.stderr != null && this.stderr.length > 0) ? " " : "";
+            this.cpu = 0;
+            this.memory = 0;
+            this.command = "";
+
+            this.is_clean = true;
+        }
+
+        public set(result: Model.Status) {
+            this.status     = result.status;
+            this.cpu        = result.used_cpu_time_sec;
+            this.memory     = result.used_memory_bytes;
+            this.signal     = result.signal;
+            this.exit       = result.return_code;
+            // this.structured_command_line
+            this.command    = result.command_line;
+            // this.system_error_message
+
+            // out and err is encoded by base64, so do decodeing
+            if ( this.is_clean ) {
+                this.stdout     = (result.out != null) ? b64_to_utf8(result.out) : "";
+                this.stderr     = (result.err != null) ? b64_to_utf8(result.err) : "";
+                this.is_clean = false;
+
+            } else {
+                this.stdout     = (result.out != null) ? b64_to_utf8(result.out) : "";
+                this.stderr     = (result.err != null) ? b64_to_utf8(result.err) : "";
+            }
+        }
+
         public status: number;
         public signal: number;
         public exit: number;
@@ -135,6 +234,8 @@ module ProcGarden {
 
         public cpu_limit: number;
         public memory_limit: number;
+
+        private is_clean: boolean = true;
     }
 
     export class OpenableUI {
@@ -154,6 +255,12 @@ module ProcGarden {
         constructor() {
             super();
         }
+
+        tip_stdout: boolean;
+        tip_stderr: boolean;
+
+        wrap_strout: boolean = false;
+        wrap_strerr: boolean = false;
     }
 
     //
@@ -191,7 +298,7 @@ module ProcGarden {
         }
 
         public make_command_line_string(is_readonly: boolean): string {
-            if ( !is_readonly && this.result.command == null ) {
+            if ( !is_readonly ) {
                 // generate from active data
                 return [
                     this.current_phase_detail.command,
@@ -205,13 +312,26 @@ module ProcGarden {
             }
         }
 
+        public reset_result() {
+            this.result.reset();
+            this.status_ui.update(null);
+        }
+
+        public set_result(status: Model.Status) {
+            this.result.set(status);
+            this.status_ui.update(status);
+        }
+
         public ui: SectionUI = new SectionUI();
+        public status_ui: StatusLabel = new StatusLabel();
         public mode: string;
 
         public current_proc: Proc;
         public current_phase_detail: PhaseDetail;
 
         public cmd_args: CmdArgs = new CmdArgs();
+        public stdin: string = "";
+
         public result: ResultHolder = new ResultHolder();
     }
 
@@ -341,6 +461,26 @@ module ProcGarden {
             this.inputs.push(i);
         }
 
+        public update(m: Model.Ticket) {
+            this.set_phase(m.phase);
+
+            if ( m.compile_state != null ) {
+                this.compile.set_result(m.compile_state);
+            }
+
+            if ( m.link_state != null ) {
+                this.link.set_result(m.link_state);
+            }
+
+            if ( m.phase >= PhaseConstant.Running ) {
+                if ( m.run_states != null ) {
+                    m.run_states.forEach((status: Model.Status) => {
+                        this.inputs[status.index].set_result(status);
+                    });
+                }
+            }
+        }
+
         public change_proc(new_proc: Proc) {
             this.current_proc = new_proc;
 
@@ -378,6 +518,24 @@ module ProcGarden {
         public set_phase(p: PhaseConstant) {
             this.phase = p;
             this.phase_ui.update(p);
+        }
+
+        public reset() {
+            this.set_phase(null);
+
+            this.compile.reset_result();
+            this.link.reset_result();
+            this.inputs.forEach((input) => {
+                input.reset_result();
+            });
+        }
+
+        private apply_to_all<T>(f: (s: Section) => T) {
+            f.call(this.compile);
+            f(this.link);
+            this.inputs.forEach((input: Input) => {
+                f(input);
+            });
         }
 
         public tab_ui: ActiveTabUI = new ActiveTabUI();
@@ -454,6 +612,7 @@ module ProcGarden {
     export interface Select2OptionData {
         id: number;
         text: string;
+        value: Array<string>;    // ['-std', '=11'] or ['-O0'] etc...
     }
 
     //
@@ -524,7 +683,6 @@ module ProcGarden {
         public update(allowed_commands: AllowedCommands) {
             console.log("allowed_commands => ", allowed_commands);
 
-            this.commands_table = {};
             this.select2_options.data = [];
             this.clear_options();
 
@@ -535,22 +693,20 @@ module ProcGarden {
                     if ( command.select != null ) {
                         // selectable
                         command.select.forEach((arg: string) => {
-                            var t: Command = { key: arg };
-                            this.commands_table[key] = t;
                             this.select2_options.data.push({
                                 id: i,
-                                text: key+arg
+                                text: key+arg,
+                                value: [key, arg]
                             });
                             ++i;
                         });
 
                     } else {
                         // key only
-                        var t: Command = { key: null };
-                        this.commands_table[key] = t;
                         this.select2_options.data.push({
                             id: i,
-                            text: key
+                            text: key,
+                            value: [key]
                         });
                     }
                 }
@@ -580,8 +736,11 @@ module ProcGarden {
             }
         }
 
+        public to_valarray(): Array<Array<string>> {
+            return this.selected_data.map((s) => s.value);
+        }
+
         public select2_options: Select2Options;
-        private commands_table: {[key: string]: Command;};
 
         private cookie_id: string = null;
         public selected_data: Array<Select2OptionData>;
@@ -617,7 +776,7 @@ module ProcGarden {
             this.update(null);
         }
 
-        public update(result: any) {
+        public update(result: Model.Status) {
             if ( result == null ) {
                 this.label = "NotRunning";
                 this.label_style = "label-default";
@@ -651,7 +810,7 @@ module ProcGarden {
                 break;
 
             case StatusConstant.Passed:
-                if ( result.signal != null || result.exit == null || result.exit != 0 ) {
+                if ( result.signal != null || result.return_code == null || result.return_code != 0 ) {
                     this.label = "RuntimeError";
                     this.label_style = "label-danger";
                 } else {
