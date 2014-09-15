@@ -7,17 +7,16 @@ require 'securerandom'
 class ApiController < ApplicationController
   include Cages
   include ExecutionTaskWorker
+  include Api
 
   protect_from_forgery except: [:get_cage_nodes]
 
+  #
   def post_source
-    unless params.has_key?("api_version")
-      raise "api_version was not given"
-    end
-    api_version = params["api_version"].to_i
+    api_version = ApiUtil.get_api_version(params)
     result = case api_version
              when 1
-               post_source_v1
+               Api::PostSourceV1.execute(params)
              else
                raise "version #{api_version} is not supported."
              end
@@ -31,10 +30,11 @@ class ApiController < ApplicationController
     Rails.logger.error ">>>>>>>>>>>>> class => #{e.class}\n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
 
   ensure
+    # TODO: change
     render :json => result
   end
 
-
+  #
   def get_entry
     entry = Entry.find(params["entry_id"]).as_document
     result = {
@@ -55,11 +55,84 @@ class ApiController < ApplicationController
   end
 
 
+  class Offsets
+    def initialize(out, err)
+      @out = out
+      @err = err
+    end
+    attr_reader :out, :err
+  end
+
+
+  def get_offsets(data)
+    out = ApiUtil.validate_type(data, 'out', Integer)
+    err = ApiUtil.validate_type(data, 'err', Integer)
+
+    return Offsets.new(out, err)
+  end
+
+  def get_unit_offsets(value, key)
+    unless value.nil?
+      if value.has_key?(key)
+        return get_offsets(value[key])
+      end
+    end
+
+    return nil
+  end
+
+  def get_array_offsets(value, key)
+    unless value.nil?
+      if value.has_key?(key)
+        # NOTE: 2048 offsets of inputs can be accepted.
+        offsets = ApiUtil.validate_array(value, key, 0, 2048)
+        return offsets.map {|off| if off.nil? then nil else get_offsets(off) end}
+      end
+    end
+
+    return []
+  end
+
   def get_ticket
+    api_version = ApiUtil.get_api_version(params)
+    result = case api_version
+             when 1
+               p "----"
+             else
+               raise "version #{api_version} is not supported."
+             end
+
+    # ========================================
+    # value
+    # ========================================
+    value = ApiUtil.extract_value(params)
+
     ticket = Ticket.find(params["ticket_id"]).as_document
-    convert_binary_array_to_base64_string(ticket["compile_state"]) if ticket.has_key?("compile_state")
-    convert_binary_array_to_base64_string(ticket["link_state"]) if ticket.has_key?("link_state")
-    ticket["run_states"].each {|s| convert_binary_array_to_base64_string(s)} if ticket.has_key?("run_states")
+
+    if ticket.has_key?("compile_state")
+      convert_binary_array_to_base64_string(ticket["compile_state"],
+                                            get_unit_offsets(value, 'compile')
+                                            )
+    end
+
+    if ticket.has_key?("link_state")
+      convert_binary_array_to_base64_string(ticket["link_state"],
+                                            get_unit_offsets(value, 'link')
+                                            )
+    end
+
+    if ticket.has_key?("run_states")
+      offsets = get_array_offsets(value, 'run')
+      if offsets.length != ticket["run_states"].length
+        raise "offset #{offsets}"
+      end
+
+      ticket["run_states"].each_with_index do |s, i|
+        convert_binary_array_to_base64_string(s, offsets[i])
+      end
+    end
+
+    remove_extra_values(ticket)
 
     result = {
       :is_error => false,
@@ -72,7 +145,7 @@ class ApiController < ApplicationController
       :message => e.to_s
     }
 
-#    Rails.logger.error ">>>>>>>>>>>>> class => #{e.class}\n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
+    Rails.logger.error ">>>>>>>>>>>>> class => #{e.class}\n!! detail => #{e}\n!! trace => #{$@.join("\n")}"
 
   ensure
     render :json => result.to_json
@@ -97,250 +170,39 @@ class ApiController < ApplicationController
 
 
   private
-  def convert_binary_array_to_base64_string(state)
-    state["out"] = Base64.strict_encode64(state["out"].inject(""){|all, s| all + s.data}) if state.has_key?("out")
-    state["err"] = Base64.strict_encode64(state["err"].inject(""){|all, s| all + s.data}) if state.has_key?("err")
-  end
-
-
-
-  private
-  def validate_type(base, key, type)
-    unless base.has_key?(key)
-      raise "#{key} was not given"
-    end
-    unless base[key].is_a?(type)
-      raise "type of #{key} must be #{type} (but #{base[key].class})"
-    end
-
-    return base[key]
-  end
-
-  def validate_array(base, key, min, max)
-    validate_type(base, key, Array)
-
-    unless base[key].length >= min && base[key].length <= max
-      raise "a number of #{key} must be [#{min}, #{max}]"
-    end
-
-    return base[key]
-  end
-
-  def parse_execution_settings(base, tag)
-    command_line = if base.has_key?("command_line")
-                     validate_type(base, "command_line", String)
-                   else
-                     ""
-                   end
-    structured_command_line = validate_type(base, "structured_command_line", Array)
-
-    return TorigoyaKit::ExecutionSetting.new(command_line,
-                                             structured_command_line,
-                                             5,   # 5sec
-                                             1 * 1024 * 1024 * 1024 # 1GB
-                                             )
-  end
-
-  class ExecutableTicketInfo
-    def initialize(index, kit)
-      @index = index    # int
-      @kit = kit        # TorigoyaKit::Ticket
-    end
-    attr_reader :index, :kit
-  end
-
-  class NoExecutableTicketInfo
-    def initialize(index, proc_id, proc_version, compile_inst, link_inst)
-      @index = index
-      @proc_id = proc_id
-      @proc_version = proc_version
-      @compile_inst = compile_inst
-      @link_inst = link_inst
-    end
-    attr_reader :index, :proc_id, :proc_version
-    attr_reader :compile_inst, :link_inst
-  end
-
-  def load_tickets_info(value, source_codes)
-    tickets_data = validate_array(value, "tickets", 1, 10)
-    tickets = tickets_data.map.with_index do |ticket, index|
-      proc_id = validate_type(ticket, "proc_id", Integer)
-      proc_version = validate_type(ticket, "proc_version", String)
-      do_execution = validate_type(ticket, "do_execution", Boolean)
-
-      ##### ========================================
-      ##### compile
-      ##### ========================================
-      compile = if ticket.has_key?("compile")
-                  parse_execution_settings(ticket["compile"], :compile)
-                else
-                  nil
-                end
-
-      ##### ========================================
-      ##### link
-      ##### ========================================
-      link = if ticket.has_key?("link")
-               parse_execution_settings(ticket["link"], :link)
-             else
-               nil
-             end
-
-      ##### ========================================
-      ##### build inst
-      ##### ========================================
-      build_inst = unless compile.nil? && link.nil?
-                     TorigoyaKit::BuildInstruction.new(compile, link)
-                   else
-                     nil
-                   end
-
-      ##### ========================================
-      ##### inputs
-      ##### ========================================
-      inputs_data = validate_array(ticket, "inputs", 1, 10)
-      inputs = inputs_data.map.with_index do |input, index|
-        stdin = TorigoyaKit::SourceData.new(index.to_s, validate_type(input, "stdin", String))
-        run = parse_execution_settings(input, :run)
-        next TorigoyaKit::Input.new(stdin, run)
+  def convert_binary_array_to_base64_string(state, offsets)
+    if state.has_key?("out")
+      from = if offsets.nil? then 0 else offsets.out end
+      to = state["out"].length
+      if from < 0 || from > to
+        raise "invalid offset[out]"
       end
+      range = state["out"][from...to] # [from, to)
+      state["out"] = Base64.strict_encode64(range.inject(""){|all, s| all + s.data})
+      state["out_until"] = to
+    end
 
-      #
-      if do_execution
-        ##### ========================================
-        ##### run inst
-        ##### ========================================
-        run_inst = TorigoyaKit::RunInstruction.new(inputs)
-
-        base_name = Digest::MD5.hexdigest("#{proc_id}/#{proc_version}/#{source_codes}/#{Time.now}") + SecureRandom.hex(16)
-
-        #
-        kit = TorigoyaKit::Ticket.new(base_name, proc_id, proc_version, source_codes, build_inst, run_inst)
-        next ExecutableTicketInfo.new(index, kit)
-
-      else
-        next NoExecutableTicketInfo.new(index, proc_id,  proc_version, compile, link)
+    if state.has_key?("err")
+      from = if offsets.nil? then 0 else offsets.err end
+      to = state["err"].length
+      if from < 0 || from > to
+        raise "invalid offset[err]"
       end
-    end # tickets_data.map
+      range = state["err"][from...to] # [from, to)
+      state["err"] = Base64.strict_encode64(state["err"].inject(""){|all, s| all + s.data})
+      state["err_until"] = to
+    end
 
-    return tickets
+    remove_extra_values(state)
   end
 
-  def post_source_v1
-    # ========================================
-    # type
-    # ========================================
-    unless params.has_key?("type")
-      raise "type was not given"
-    end
-    unless params["type"] == "json"
-      raise "only json format is supported"
+  def remove_extra_values(data)
+    if data.has_key?('_id')
+      data.delete('_id')
     end
 
-    # ========================================
-    # value
-    # ========================================
-    value = JSON.parse(validate_type(params, "value", String))
-
-#    Rails.logger.info "VALUE => " + value.to_s
-
-
-    ### ========================================
-    ### description
-    ### ========================================
-    description = validate_type(value, "description", String)
-
-    ### ========================================
-    ### visibility
-    ### ========================================
-    visibility = validate_type(value, "visibility", Integer)
-
-    # ========================================
-    # user id
-    # ========================================
-    #user_id = if user_signed_in? then current_user.id.to_s then nil end
-    user_id = nil
-
-    ### ========================================
-    ### source code
-    ### ========================================
-    source_data = validate_array(value, "source_codes", 1, 1)    # currently only one file is accepted
-    source_codes = source_data.map do |code|
-      # no filename => nil
-      next TorigoyaKit::SourceData.new(nil, code)
+    if data.has_key?('_type')
+      data.delete('_type')
     end
-
-    entry = Entry.new(:owner_user_id => user_id,
-                      :revision => "",
-                      :visibility => visibility,
-                      )
-
-    grid_fs = Mongoid::GridFs
-    source_data.each do |code|
-      begin
-        # TODO: support multi files
-        file = Tempfile.new('procgarden_frontend')
-        file.write(code)
-        file.close
-
-        f = grid_fs.put(file.path)
-        code = entry.codes.build(:file_id => f.id,
-                                 :file_name => "source",
-                                 :type => :native,
-                                 )
-        code.save!
-
-      ensure
-        file.unlink unless file.nil?
-      end
-    end
-
-
-    ### ========================================
-    ### tickets
-    ### ========================================
-    tickets_info = load_tickets_info(value, source_codes)
-
-    #
-    tickets_info.each do |t|
-      if t.is_a?(ExecutableTicketInfo)
-        # do execution
-        model = entry.tickets.build(:index => t.index,
-                                    :is_running => true,
-                                    :processed => false,
-                                    :do_execute => true,
-                                    :proc_id => t.kit.proc_id,
-                                    :proc_version => t.kit.proc_version,
-                                    :proc_label => "",
-                                    :phase => Phase::Waiting
-                                    )
-        model.save!
-
-        # execute!
-        execute_and_update_ticket(t.kit, model)
-
-      else
-        # do NOT execution
-        model = entry.tickets.build(:index => t.index,
-                                    :is_running => false,
-                                    :processed => true,
-                                    :do_execute => false,
-                                    :proc_id => t.proc_id,
-                                    :proc_version => t.proc_version,
-                                    :proc_label => "",
-                                    :phase => Phase::NotExecuted
-                                    )
-        model.save!
-      end
-    end # tickets.each
-
-    entry.save!
-
-    return {
-      :entry_id => entry.id.to_s,
-      :ticket_ids => entry.tickets.map {|t| t.id.to_s },
-      :is_error => false
-    }
   end
-
 end

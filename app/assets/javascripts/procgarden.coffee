@@ -399,115 +399,6 @@ class LinkResult extends ResultWithUIandCommandLine
 
 
 
-class TicketUI
-    constructor: () ->
-        @is_active_tab = true
-        @phase_label_style = ""
-        @phase_label = ""
-
-
-
-
-class Ticket
-    constructor: (default_proc) ->
-        @proc = new ProcHolder(default_proc)
-        @do_execution = true
-        @is_processing = false
-        @phase = null
-        @ui = new TicketUI()
-
-        @compile = new CompileResult(@proc)
-        @link = new LinkResult(@proc)
-
-        @inputs = []
-
-    ##########
-    append_input: (default_val=null) =>
-        # set all status of tabs to disable
-        for input in @inputs
-            input.tab_ui.inactivate()
-
-        # input format
-        i = new Input(@proc, default_val)
-        @inputs.push(i)
-
-    ##########
-    remap_inputs: (inputs_data) =>
-        @inputs = []
-        for i_data in inputs_data
-            @append_input(i_data)
-        for input in @inputs
-            input.tab_ui.inactivate()
-        @inputs.is_active_tab = true
-
-    ##########
-    set_phase: (phase) =>
-        @phase = phase
-        unless phase?
-            return
-
-        switch phase
-            when PhaseConstant.Waiting
-                @ui.phase_label = "Waiting..."
-                @ui.phase_label_style = "label-info"
-
-            when PhaseConstant.NotExecuted
-                @ui.phase_label = "NotExecuted"
-                @ui.phase_label_style = "label-default"
-
-            when PhaseConstant.Compiling
-                @ui.phase_label = "Compiling"
-                @ui.phase_label_style = "label-warning"
-
-            when PhaseConstant.Compiled
-                @ui.phase_label = "Compiled"
-                @ui.phase_label_style = "label-success"
-
-            when PhaseConstant.Linking
-                @ui.phase_label = "Linking"
-                @ui.phase_label_style = "label-warning"
-
-            when PhaseConstant.Linked
-                @ui.phase_label = "Linked"
-                @ui.phase_label_style = "label-success"
-
-            when PhaseConstant.Running
-                @ui.phase_label = "Running"
-                @ui.phase_label_style = "label-primary"
-
-            when PhaseConstant.Finished
-                @ui.phase_label = "Finished"
-                @ui.phase_label_style = "label-success"
-
-            when PhaseConstant.Error
-                @ui.phase_label = "System Error(Please report this page!)"
-                @ui.phase_label_style = "label-danger"
-
-    ##########
-    reset: () =>
-        @set_phase(null)
-
-        @compile.reset()
-        @link.reset()
-
-        for input in @inputs
-            input.reset()
-
-    ##########
-    propagate_proc: (raw_proc) =>
-        @proc.set(raw_proc)
-        @compile.proc.set(raw_proc)
-        @link.proc.set(raw_proc)
-        for input in @inputs
-            input.proc.set(raw_proc)
-
-    ##########
-    refresh_command_line: () =>
-        @compile.refresh_command_line()
-        #@link.refresh_command_line()
-        for input in @inputs
-            input.refresh_command_line()
-
 
 
 # ==================================================
@@ -771,7 +662,7 @@ ProcGardenApp.controller(
             console.log "submit => ", submit_data
 
             # submit!
-            $.post("/api/source", submit_data, "json")
+            $.post("/api/system/source", submit_data, "json")
                 .done (data) =>
                     $rootScope.$apply () =>
                         if data.is_error
@@ -790,7 +681,7 @@ ProcGardenApp.controller(
         $scope.wait_entry_for_update = (entry_id, ticket_ids, with_init = false, set_source = false) =>
             $scope.is_running = true
 
-            $.get("/api/entry/#{entry_id}", "json")
+            $.get("/api/system/entry/#{entry_id}", "json")
                 .done (data) =>
                     $rootScope.$apply () =>
                         if data.is_error
@@ -838,9 +729,22 @@ ProcGardenApp.controller(
 
         ########################################
         # phase 3
-        $scope.wait_ticket_for_update = (ticket_id, with_init = false) =>
+        $scope.wait_ticket_for_update = (ticket_id, with_init = false, ticket_index = null) =>
             console.log "get=>", ticket_id
-            $.get("/api/ticket/#{ticket_id}", "json")
+
+            submit_data = {
+                api_version: 1,
+                type: "json"
+            }
+            if ticket_index?
+                target_ticket = $scope.tickets[ticket_index]
+                raw_submit_data = target_ticket.recieved_until()
+                console.log "ababa=> ", raw_submit_data
+                submit_data.value = JSON.stringify(raw_submit_data)
+
+            console.log "submit => ", submit_data
+
+            $.get("/api/system/ticket/#{ticket_id}", submit_data, "json")
                 .done (data) =>
                     # console.log( "Data Loaded: " + JSON.stringify(data) )
                     $rootScope.$apply () =>
@@ -864,9 +768,9 @@ ProcGardenApp.controller(
                                 # set processing flag
                                 $scope.tickets[ticket_index].is_processing = true
                                 if $scope.selected_tab_index == ticket_index
-                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id) ), 200 ) # recursive call
+                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id, false, ticket_index) ), 200 ) # recursive call
                                 else
-                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id) ), 2000 ) # recursive call
+                                    setTimeout( (() => $scope.wait_ticket_for_update(ticket_id, false, ticket_index) ), 2000 ) # recursive call
                             else
                                 # set processing flag
                                 $scope.finish_ticket(ticket_index)

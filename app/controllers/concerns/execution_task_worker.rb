@@ -2,10 +2,23 @@ require 'torigoya_kit'
 require 'singleton'
 
 module ExecutionTaskWorker
+  module_function
   def execute_and_update_ticket(ticket, ticket_model)
     Worker.instance.add(ticket, ticket_model)
   end
-  module_function :execute_and_update_ticket
+
+  #
+  class Phase
+    Waiting = 0
+    NotExecuted = 10
+    Compiling = 200
+    Compiled = 250
+    Linking = 280
+    Linked = 281
+    Running = 300
+    Finished = 400
+    Error = 401
+  end
 
   #
   module Errors
@@ -30,6 +43,8 @@ module ExecutionTaskWorker
     class OpenPrivateEntryError < StandardError
     end
   end
+
+  private
 
   #
   class Worker
@@ -81,7 +96,7 @@ module ExecutionTaskWorker
     def add(ticket, ticket_model)
       @tickets.push([ticket, ticket_model])
     end # def add
-  end
+  end # class Worker
 
   class RunFlow
     def self.run(ticket, model)
@@ -182,17 +197,5 @@ module ExecutionTaskWorker
       raise
 
     end # def
-  end
-
-  class Phase
-    Waiting = 0
-    NotExecuted = 10
-    Compiling = 200
-    Compiled = 250
-    Linking = 280
-    Linked = 281
-    Running = 300
-    Finished = 400
-    Error = 401
-  end
-end
+  end # class RunFlow
+end # module ExecutionTaskWorker

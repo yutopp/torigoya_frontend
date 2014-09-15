@@ -20,10 +20,12 @@ Rails.application.routes.draw do
   match 'users' => 'users#index', :via => :get
   match 'users/codes' => 'users#show_my_codes', :via => :get
 
-  #
-  match 'api/source' => 'api#post_source', :via => :post
-  match 'api/entry/:entry_id' => 'api#get_entry', :via => :get
-  match 'api/ticket/:ticket_id' => 'api#get_ticket', :via => :get
+  # system
+  match 'api/system/source' => 'api#post_source', :via => :post
+  match 'api/system/entry/:entry_id' => 'api#get_entry', :via => :get
+  match 'api/system/ticket/:ticket_id' => 'api#get_ticket', :via => :get
+
+  # public api
   match 'api/nodes' => 'api#get_cage_nodes', :via => :get
 
   #

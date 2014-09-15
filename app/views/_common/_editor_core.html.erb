@@ -1,10 +1,19 @@
 <!-- editor body -->
 <div class="row">
     <div class="col-sm-12">
+<% if false %>
         <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
 
 int main() {
     std::cout << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
+}</textarea>
+<% end %>
+        <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
+
+int main() {
+    for(int i=0; i<1024; ++i) {
+        std::cout << i << "=============================================== aaaaaaaaaaaaaaaaaaaaa ?????????????????????/" << std::endl;
+    }
 }</textarea>
     </div>
 </div>

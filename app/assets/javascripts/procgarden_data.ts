@@ -44,7 +44,10 @@ module ProcGarden {
             structured_command_line: any;
 
             out: string;
+            out_until: number;
+
             err: string;
+            err_until: number;
         }
     }
 
@@ -73,7 +76,6 @@ module ProcGarden {
         }
 
         get is_runnable() {
-            console.log(this.description.runnable);
             return this.description.runnable;
         }
 
@@ -198,6 +200,9 @@ module ProcGarden {
             this.command = "";
 
             this.is_clean = true;
+
+            this.stdout_recieved_line = 0;
+            this.stderr_recieved_line = 0;
         }
 
         public set(result: Model.Status) {
@@ -217,8 +222,16 @@ module ProcGarden {
                 this.is_clean = false;
 
             } else {
-                this.stdout     = (result.out != null) ? b64_to_utf8(result.out) : "";
-                this.stderr     = (result.err != null) ? b64_to_utf8(result.err) : "";
+                this.stdout     += (result.out != null) ? b64_to_utf8(result.out) : "";
+                this.stderr     += (result.err != null) ? b64_to_utf8(result.err) : "";
+            }
+
+            if ( result.out_until != null ) {
+                this.stdout_recieved_line = result.out_until;
+            }
+
+            if ( result.err_until != null ) {
+                this.stderr_recieved_line = result.err_until;
             }
         }
 
@@ -236,6 +249,9 @@ module ProcGarden {
         public memory_limit: number;
 
         private is_clean: boolean = true;
+
+        public stdout_recieved_line: number = 0;
+        public stderr_recieved_line: number = 0;
     }
 
     export class OpenableUI {
@@ -273,8 +289,6 @@ module ProcGarden {
         public change_proc(new_proc: Proc) {
             this.current_proc = new_proc;
             this.current_phase_detail = (<any>new_proc.profile)[this.mode];
-
-            console.log(this.mode, this.current_phase_detail);
         }
 
         public refresh_command_line() {
@@ -554,6 +568,25 @@ module ProcGarden {
         public data: {
             selected_proc_id: number;
         };
+
+        public recieved_until() {
+            return {
+                compile: {
+                    out: this.compile.result.stdout_recieved_line,
+                    err: this.compile.result.stderr_recieved_line
+                },
+                link: {
+                    out: this.link.result.stdout_recieved_line,
+                    err: this.link.result.stderr_recieved_line
+                },
+                run: this.inputs.map((input: Input) => {
+                    return {
+                        out: input.result.stdout_recieved_line,
+                        err: input.result.stderr_recieved_line
+                    }
+                })
+            };
+        }
     }
 
     //
