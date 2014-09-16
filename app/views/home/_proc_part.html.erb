@@ -1,7 +1,6 @@
 <div class="container-fluid has-no-extra-space">
     <div class="row sc-lang-op-row">
         <div class="col-sm-5">
-            {{ticket.result.command}}
             <% unless readonly %>
                 <%# language list %>
                 <select ui-select2
@@ -15,7 +14,14 @@
                     </optgroup>
                 </select>
             <% else %>
-                {{ticket.current_proc.title}}
+                <code>
+                    <strong ng-if="ticket.fallback == null">
+                        {{ticket.current_proc.title}}
+                    </strong>
+                    <strong ng-if="ticket.fallback != null">
+                        {{ticket.fallback.title}}({{ticket.fallback.message}})
+                    </strong>
+                </code>
             <% end %>
         </div>
 
@@ -38,6 +44,14 @@
         </div>
     </div>
     <!-- /language operation -->
+
+    <% unless readonly %>
+        <div class="row" ng-if="ticket.fallback != null">
+            <small class="text-warning">
+                Cloned from "{{ticket.fallback.title}}". {{ticket.fallback.message}}
+            </small>
+        </div>
+    <% end %>
 
     <!-- compile link -->
     <div class="row" ng-if="ticket.current_proc.profile.is_build_required === true">

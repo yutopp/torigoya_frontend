@@ -1,28 +1,6 @@
 # AngularJS
 ProcGardenApp = angular.module('ProcGardenApp', ['ui.select2', 'ui.bootstrap', 'luegg.directives'])
 
-class PhaseConstant
-    @Waiting = 0
-    @NotExecuted = 10
-    @Compiling = 200
-    @Compiled = 250
-    @Linking = 280
-    @Linked = 281
-    @Running = 300
-    @Finished = 400
-    @Error = 401
-
-
-class StatusConstant
-    @MemoryLimit = 1
-    @CPULimit = 2
-    @OutputLimit = 22
-    @Error = 3
-    @InvalidCommand = 31
-    @Passed = 4
-    @UnexpectedError = 5
-
-
 
 
 
@@ -164,28 +142,10 @@ ProcGardenApp.controller(
             # data type is hash and defined in torigoya cage
 
             # initialize
-            $scope.procs = []
-            $scope.procs_group = {}
+            init = ProcGarden.Procs.initial_set(gon.proc_table);
 
-            #
-            i = 0
-            for proc_id, proc_config_unit of gon.proc_table
-                description = new ProcGarden.ProcDescription(proc_config_unit.Description)
-                proc_profile_table = proc_config_unit.Versioned
-                for proc_version, proc_profile of proc_profile_table
-                    proc = {
-                        id: i,
-                        value: {proc_id: parseInt(proc_id, 10), proc_version: proc_version},
-                        title: "#{description.name} - #{proc_version}",
-                        group: description.name,
-                        profile: new ProcGarden.ProcProfile(description, proc_profile)
-                    }
-
-                    $scope.procs.push proc
-
-                    $scope.procs_group[description.name] = $scope.procs_group[description.name] || [];
-                    $scope.procs_group[description.name].push(proc)
-                    i = i + 1
+            $scope.procs = init.procs
+            $scope.procs_group = init.group
 
         # Language Processor List...
         $scope.procs = []
@@ -293,7 +253,8 @@ ProcGardenApp.controller(
                 unless new_value?
                     return
 
-                input = $scope.tickets[$scope.selected_tab_index].inputs[$scope.selected_input_tab_index]
+                ticket =  $scope.tickets[$scope.selected_tab_index]
+                input = ticket.inputs[$scope.selected_input_tab_index]
                 input.cmd_args.structured.save($scope.do_save_cookie)
         )
 
@@ -551,60 +512,7 @@ ProcGardenApp.controller(
             proc_version = ticket_model.proc_version
 
             ticket = $scope.tickets[ticket_index]
-
-            console.log "loading", ticket
-
-            found_proc = p for p in $scope.procs when p.value.proc_id == proc_id && p.value.proc_version == proc_version
-            unless found_proc?
-                # rest = $scope.procs.filter((p) => p.proc_id == proc_id)
-                # if rest.length == 0
-                #    console.log "completely not"
-                #console.log "proc was not found"
-                # the Proc of this ticket is already unsupported, so make a DUMMY proc profile
-                # Error....
-                # console.log "error... : found_proc?"
-                # make minimum details...
-                dummy_description = new ProcGarden.ProcDescription({
-                    Id: 0
-                    Name: if ticket_model.proc_label? then ticket_model.proc_label else "???",
-                    Runnable: true,
-                    Path: "???"
-                })
-
-                profile = new ProcGarden.ProcProfile(dummy_description, {
-                    Version: "UNSUPPORTED",
-                    IsBuildRequired: true,
-                    IsLinkIndependent: true,
-                    Source: {
-                        File: "???"
-                        Extention: "???"
-                    },
-                    Compile: {
-                        File: "???"
-                        Extention: "???"
-                    },
-                    Link: {
-                        File: "???"
-                        Extention: "???"
-                    },
-                    Run: {
-                        File: "???"
-                        Extention: "???"
-                    }
-                })
-
-                found_proc = {
-                    id: 0,
-                    value: {
-                        proc_id: profile.proc_id,
-                        proc_version: profile.proc_version
-                    }
-                    title: "#{profile.name}(unsupported in ProcGarden)",
-                    group: "???",
-                    profile: profile
-                }
-
-                ticket.do_execution = true
+            found_proc = ProcGarden.Procs.fallback($scope.procs, proc_id, proc_version, ticket, ticket_model)
 
             #
             ticket.change_proc(found_proc)

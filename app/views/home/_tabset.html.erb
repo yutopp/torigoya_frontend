@@ -5,7 +5,7 @@
 <tabset ng-init="wait_entry_for_update('<%= entry_id %>', <%= with_init %>)">
 <% end %>
 
-    <% if entry_id.nil? %>
+    <% unless readonly %>
         <!-- tab append button -->
         <li class="sc-add-btn">
             <button type="button"
