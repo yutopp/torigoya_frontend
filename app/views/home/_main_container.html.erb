@@ -5,7 +5,10 @@
             <div class="well well-sm">
                 <div class="container-fluid has-no-extra-space">
                     <%= render :partial => '_common/editor_options' %>
-                    <%= render :partial => '_common/editor_core' %>
+                    <%= render :partial => '_common/editor_core', :locals => {
+                        source_codes: @source_codes,
+                        readonly: false
+                    } %>
                 </div>
             </div>
         </div>
@@ -18,7 +21,11 @@
         <!-- tickets tabs -->
         <div class="col-sm-12 has-no-extra-space">
             <div class="well well-sm">
-                <%= render :partial => 'tabset' %>
+                <%= render :partial => 'tabset', :locals => {
+                    entry_id: @cloned_from_entry_id,
+                    with_init: true,
+                    readonly: false
+                } %>
             </div>
         </div>
         <!-- /tickets tabs -->

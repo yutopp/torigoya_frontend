@@ -37,11 +37,13 @@ module ProcGarden {
             used_memory_bytes: number;
             signal: number;
             return_code: number;
-            command_line: string;
+            command_line: string;   // total
             status: number;
             system_error_message: string;
 
-            structured_command_line: any;
+            structured_command_line: Array<Array<string>>;
+            cpu_time_sec_limit: number;
+            memory_bytes_limit: number;
 
             out: string;
             out_until: number;
@@ -199,6 +201,9 @@ module ProcGarden {
             this.memory = 0;
             this.command = "";
 
+            this.cpu_limit = 0;
+            this.memory_limit = 0;
+
             this.is_clean = true;
 
             this.stdout_recieved_line = 0;
@@ -211,9 +216,12 @@ module ProcGarden {
             this.memory     = result.used_memory_bytes;
             this.signal     = result.signal;
             this.exit       = result.return_code;
-            // this.structured_command_line
+
             this.command    = result.command_line;
             // this.system_error_message
+
+            this.cpu_limit = result.cpu_time_sec_limit;
+            this.memory_limit = result.memory_bytes_limit;
 
             // out and err is encoded by base64, so do decodeing
             if ( this.is_clean ) {
@@ -334,6 +342,12 @@ module ProcGarden {
         public set_result(status: Model.Status) {
             this.result.set(status);
             this.status_ui.update(status);
+        }
+
+        public load_init_data_from_model(status: Model.Status) {
+            console.log(status.structured_command_line);
+
+            this.cmd_args.structured.load_from_array(status.structured_command_line);
         }
 
         public ui: SectionUI = new SectionUI();
@@ -495,6 +509,24 @@ module ProcGarden {
             }
         }
 
+        public load_init_data_from_model(m: Model.Ticket) {
+            if ( m.compile_state != null ) {
+                this.compile.load_init_data_from_model(m.compile_state);
+            }
+
+            if ( m.link_state != null ) {
+                this.link.load_init_data_from_model(m.link_state);
+            }
+
+            if ( m.phase >= PhaseConstant.Running ) {
+                if ( m.run_states != null ) {
+                    m.run_states.forEach((status: Model.Status) => {
+                        this.inputs[status.index].load_init_data_from_model(status);
+                    });
+                }
+            }
+        }
+
         public change_proc(new_proc: Proc) {
             this.current_proc = new_proc;
 
@@ -539,7 +571,7 @@ module ProcGarden {
 
             this.compile.reset_result();
             this.link.reset_result();
-            this.inputs.forEach((input) => {
+            this.inputs.forEach((input: Input) => {
                 input.reset_result();
             });
         }
@@ -767,6 +799,28 @@ module ProcGarden {
                     }
                 }
             }
+        }
+
+        public load_from_array(args: Array<Array<string>>) {
+            this.clear_options();
+
+            args.forEach((arg_set: Array<string>) => {
+                this.select2_options.data.filter((d: Select2OptionData) => {
+                    if ( d.value.length != arg_set.length ) {
+                        return false;
+                    }
+                    if ( d.value.length != 1 && d.value.length != 2 ) {
+                        return false;
+                    }
+                    if ( d.value.length == 1 ) {
+                        return arg_set[0] == d.value[0];
+                    } else if ( d.value.length == 2 ) {
+                        return arg_set[0] == d.value[0] && arg_set[1] == d.value[1];
+                    }
+                }).forEach((d: Select2OptionData) => {
+                    this.selected_data.push(d);
+                });
+            });
         }
 
         public to_valarray(): Array<Array<string>> {

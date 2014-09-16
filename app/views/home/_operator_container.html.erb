@@ -14,16 +14,20 @@
                         <img src="/assets/loading.gif" ng-if="input.is_running"></img>
                     </tab-heading>
 
-                    <%= render :partial => '_common/input_detail', :locals => { :readonly => false } %>
+                    <%= render :partial => '_common/input_detail', :locals => {
+                        :readonly => readonly
+                    } %>
 
                 </tab>
             </tabset>
 
-            <button type='button'
-                    class='btn btn-primary btn-xs'
-                    ng-click="append_input(selected_tab_index)">
-                add input
-            </button>
+            <% unless readonly %>
+                <button type='button'
+                        class='btn btn-primary btn-xs'
+                        ng-click="append_input(selected_tab_index)">
+                    add input
+                </button>
+            <% end %>
         </div>
     </div>
     <!-- /input -->

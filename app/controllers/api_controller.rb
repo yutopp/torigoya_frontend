@@ -36,13 +36,12 @@ class ApiController < ApplicationController
 
   #
   def get_entry
-    entry = Entry.find(params["entry_id"]).as_document
+    entry = Entry.find(params["entry_id"])
     result = {
       :is_error => false,
-      :entry => entry
+      :entry => entry.as_document,
+      :ticket_ids => entry.tickets.map {|t| t.id.to_s },
     }
-#    Rails.logger.error params
-#    Rails.logger.error entry
 
   rescue => e
     result = {
@@ -81,7 +80,7 @@ class ApiController < ApplicationController
     return nil
   end
 
-  def get_array_offsets(value, key)
+  def get_array_offsets(value, key, length)
     unless value.nil?
       if value.has_key?(key)
         # NOTE: 2048 offsets of inputs can be accepted.
@@ -90,7 +89,7 @@ class ApiController < ApplicationController
       end
     end
 
-    return []
+    return length.times.map {|n| nil}
   end
 
   def get_ticket
@@ -122,9 +121,9 @@ class ApiController < ApplicationController
     end
 
     if ticket.has_key?("run_states")
-      offsets = get_array_offsets(value, 'run')
+      offsets = get_array_offsets(value, 'run', ticket["run_states"].length)
       if offsets.length != ticket["run_states"].length
-        raise "offset #{offsets}"
+        raise "offset length is invalid. #{offsets.length} / #{ticket["run_states"].length}"
       end
 
       ticket["run_states"].each_with_index do |s, i|

@@ -5,7 +5,7 @@ class EntriesController < ApplicationController
                        Entry.all
                      else
                        # do NOT distinguish Upper/Lower camel
-                       Entry.in( language_name_list: /#{Regexp.escape(params[:query])}/i )
+                       Entry.in( language_tags: /#{Regexp.escape(params[:query])}/i )
                      end
 
     permission_filtered_entry = if user_signed_in? then
@@ -42,7 +42,7 @@ class EntriesController < ApplicationController
   def show_entry
     @entry_id = params[:entry_id].to_s
     if @entry_id == "!search"
-      return redirect_to :action => "list", :query => params[:query]
+      return redirect_to :action => "show_list", :query => params[:query]
     end
 
     @entry = Entry.find(@entry_id)

@@ -20,9 +20,9 @@
 
                     <div class="col-sm-7">
                         <% if proc.masked %>
-                            <%= link_to "enable", "/master/enable_langproc/#{proc.id}", method: 'post' %>
+                            <%= link_to "enable", "/master/enable_langproc/#{proc.id}", method: :post %>
                         <% else %>
-                            <%= link_to "disable", "/master/disable_langproc/#{proc.id}", method: 'post' %>
+                            <%= link_to "disable", "/master/disable_langproc/#{proc.id}", method: :post %>
                         <% end %>
                     </div>
                 </div>
@@ -36,9 +36,6 @@
 
 
     <h2>Runner</h2>
-    <script type="text/javascript">
-        sc_g_runner_table = <%== @runner_nodes.to_s %>;
-    </script>
 
     <div ng-controller="RunnerNodeAddresses">
 

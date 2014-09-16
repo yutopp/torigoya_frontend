@@ -1,6 +1,5 @@
 <div class="container">
     <div class="row" ng-controller="EntryController" ng-init="mark_as_not_saving_cookie()">
-
         <!-- sidebar container -->
         <div class="col-sm-2" style="position:relative;">
             <div class="well well-sm sc-sidebar affix" id="sc-navbar">
@@ -18,25 +17,11 @@
             <div class="row" ng-controller="SourceCodeEditor">
                 <div class="col-sm-12">
                     <div class="well well-sm">
-
                         <%= render :partial => '_common/editor_options' %>
-
-                        <!-- editor body -->
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor"><%= @source_code %></textarea>
-                            </div>
-                        </div>
-                        <!-- /editor body -->
-
-                        <script type="text/javascript">
-                        $(function() {
-                            sc_setup_editor({
-                                readonly: true
-                            });
-                            $('#sc-code-editor').autosize();
-                        });
-                        </script>
+                        <%= render :partial => '_common/editor_core', :locals => {
+                            source_codes: @source_codes,
+                            readonly: true
+                        } %>
                     </div>
                 </div>
             </div>
@@ -49,101 +34,29 @@
                 <!-- tickets tabs -->
                 <div class="col-sm-10">
                     <div class="well well-sm">
-                        <!-- tab set -->
-                        <tabset ng-init="wait_entry_for_update('<%= @entry_id %>', true)">
-
-                            <!-- tab -->
-                            <tab ng-repeat="ticket in tickets"
-                                 active="ticket.ui.is_active_tab"
-                                 select="change_ticket_tab($index)"
-                                 class="sc-ticket-tab">
-                                <tab-heading tooltip="{{ticket.proc.selected.title}}">
-                                    <span class="glyphicon glyphicon-file" ng-if="!ticket.is_processing"></span>
-                                    <img src="/assets/loading.gif" ng-if="ticket.is_processing"></img>
-                                </tab-heading>
-
-
-                                <!-- tab content -->
-                                <div class="tab-pane">
-                                    <!-- language operation -->
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <code><strong>{{ticket.proc.selected.title}}</strong></code>
-                                        </div>
-
-                                        <div class='col-sm-4'>
-                                        </div>
-
-                                        <div class='col-sm-2 text-right'>
-                                            <span class="label"
-                                                  ng-class="ticket.ui.phase_label_style">
-                                                {{ticket.ui.phase_label}}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <!-- /language operation -->
-
-                                    <!-- compile link -->
-                                    <div class="row" ng-if="ticket.proc.selected.detail.detail.is_build_required === true">
-                                        <div class="col-sm-12">
-                                            <accordion close-others="false">
-                                                <%= render :partial => '_common/ticket_detail_accordion_group', :locals => { :mode => 'compile', :readonly => true } %>
-                                                <%= render :partial => '_common/ticket_detail_accordion_group', :locals => { :mode => 'link', :readonly => true } %>
-                                            </accordion>
-                                        </div>
-                                    </div>
-                                    <!-- /compile link -->
-
-
-                                    <!-- input -->
-                                    <div class="row" ng-if="ticket.do_execution === true">
-                                        <div class="col-sm-12">
-                                            <tabset class="sc-input-tabset mode-{{ticket.proc.selected.detail.detail.is_build_required}}">
-                                                <tab ng-repeat="input in ticket.inputs"
-                                                     active="input.ui.is_active_tab"
-                                                     class="sc-ticket-input-tab">
-
-                                                    <tab-heading tooltip="{{input.ui.label}}">
-                                                        {{$index}}
-                                                        <img src="/assets/loading.gif" ng-if="input.is_running"></img>
-                                                    </tab-heading>
-
-                                                    <%= render :partial => '_common/input_detail', :locals => { :readonly => true } %>
-
-                                                </tab>
-                                            </tabset>
-
-                                        </div>
-
-                                    </div>
-                                    <!-- /input -->
-
-                                </div>
-                                <!-- /tab content -->
-                            </tab>
-                            <!-- /tab -->
-                        </tabset>
-                        <!-- /tabset -->
+                        <%= render :partial => 'home/tabset', :locals => {
+                            entry_id: @entry_id,
+                            with_init: true,
+                            readonly: true
+                        } %>
                     </div>
                 </div>
-                <!-- /tickets tabs -->
 
 
                 <div class="col-sm-2">
                     <div class="row">
                         <div class="col-sm-12">
-                            <!-- submit -->
-
+                            <!-- clone -->
                             <%= form_tag( '/home/index', :method => :post) do %>
-                            <input type='hidden'
-                                   id='entry_id'
-                                   name='entry_id'
-                                   value='<%= @entry_id %>'>
-                            <button type='submit'
-                                    class='btn btn-success'
-                                    style="width: 100%">
-                                <strong>Clone!</strong>
-                            </button>
+                                <input type='hidden'
+                                       id='entry_id'
+                                       name='entry_id'
+                                       value='<%= @entry_id %>'>
+                                <button type='submit'
+                                        class='btn btn-success'
+                                        style="width: 100%">
+                                    <strong>Clone!</strong>
+                                </button>
                             <% end %>
 
                             <h6>Visibility:</h6>

@@ -146,261 +146,6 @@ ProcGardenApp.controller(
 )
 
 
-
-class UIInfo
-    constructor: () ->
-        super
-
-        @is_active_tab = true
-
-class UIInfoWithCommandLine extends UIInfo
-    constructor: (pattern_name) ->
-        super
-        @is_open = true
-        @wrap = "off"
-        @pattern_name = pattern_name
-        # used selectable command list
-        @allowed_structured_command_line = []   # type: {id: <int>, title: <string>, value: <hash>{<string>: <string>}}
-
-        @
-
-        @select2_options = {
-            multiple: true,
-            simple_tags: true,
-            tags: ['tag1', 'tag2', 'tag3', 'tag4']
-        }
-
-        new ProcGarden.CommandLine();
-
-    # update selectable allowed command line for UI
-    set_allowed_structured_command_line: (allowed_command_line) =>
-        @allowed_structured_command_line = []
-
-        index = 0
-        for key, value of allowed_command_line
-            if value?.select?
-                # selectable
-                for item in value.select
-                    t = {}
-                    t[key] = if item? then item else ""
-                    @allowed_structured_command_line.push {
-                        id: index,
-                        title: "#{key}#{item}",
-                        value: t
-                    }
-                    index = index + 1
-            else
-                # only key
-                t = {}
-                t[key] = null
-                @allowed_structured_command_line.push {
-                    id: index,
-                    title: key,
-                    value: t
-                }
-                index = index + 1
-
-    toggle_option_collapse: () =>
-        @is_option_collapsed = !@is_option_collapsed  # invert value to toggle option
-        $.cookie("sc-ticket-is-compile-option-collapsed-#{@pattern_name}", @is_option_collapsed)
-
-    should_toggle: () =>
-        return @allowed_structured_command_line.length > 0
-
-
-# https://developer.mozilla.org/ja/docs/Web/API/window.btoa#Unicode_Strings
-b64_to_utf8 = (str) =>
-    try
-        return decodeURIComponent(encodeURI(window.atob(str)))
-    catch e
-        return window.atob(str)
-
-
-##########
-#
-class Result
-    constructor: () ->
-        @status = null
-        @signal = null
-        @exit = null
-
-        @stdout = ""
-        @stderr = ""
-        @cpu = 0
-        @memory = 0
-        @command = ""
-
-        @cpu_limit = 0
-        @memory_limit = 0
-
-    reset: () =>
-        @status = null
-        @signal = null
-        @exit = null
-        @stdout = if @stdout?.length > 0 then " " else ""
-        @stderr = if @stderr?.length > 0 then " " else ""
-        @cpu = 0
-        @memory = 0
-        @command = ""
-
-    set_result: (result) =>
-        @status     = result.status
-        @cpu        = result.used_cpu_time_sec
-        @memory     = result.used_memory_bytes
-        @signal     = result.signal
-        @exit       = result.return_code
-        #structured_command_line
-        @command    = result.command_line
-        #system_error_message
-
-        # out and err is encoded by base64, so do decodeing
-        @stdout     = if result.out? then b64_to_utf8(result.out) else ""
-        @stderr     = if result.err? then b64_to_utf8(result.err) else ""
-
-
-##########
-#
-class ProcHolder
-    constructor: (default_proc) ->
-        @selected = default_proc
-        @selected_value = default_proc.title
-
-    set: (raw_proc) =>
-        @selected = raw_proc
-        @selected_value = raw_proc.title
-
-
-##########
-#
-class ResultWithUIandCommandLine extends Result
-    constructor: (proc, ui, default_val = null) ->
-        super
-        @proc = proc
-        @ui = ui
-        @structured_command_line = new ProcGarden.StructuredCommandLine
-        @command_line = if default_val?.command_line? then default_val.command_line else ""
-
-        @pattern_name = ui.pattern_name
-
-        #
-        @refresh_command_line()
-
-    ##########
-    reset: () =>
-        super
-        @ui.set_ui_label(null)
-
-    ##########
-    set_result: (result) =>
-        super(result)
-        @ui.set_ui_label(this)
-
-    ##########
-    refresh_command_line: () =>
-        @update_allowed_command_line()
-        @load_structured_command_line()
-
-
-
-
-    ##########
-    generate_structured_command_line: (gen) =>
-        @clear_options()
-        @structured_command_line.body = gen
-
-        if gen?
-            for item in gen
-                item_title = ("#{k}#{if v? then v else ''}" for k, v of item)[0]
-                # console.log "item_title", item_title
-                @structured_command_line.selected_with_title.push(
-                    @_search_titled_command(item_title)
-                    )
-
-
-
-
-    ##########
-    make_command_line_string: (is_readonly) =>
-        dd = @proc.selected?.profile?[@pattern_name]
-        if !is_readonly && dd?.command?
-            structured_command_line = @structured_command_line?.body
-            command_line = @command_line
-
-            return [
-                dd.command,
-                options_to_s(structured_command_line),
-                dd.fixed_command_line,
-                escapeshell(command_line)
-            ].join(' ')
-        else
-            return if @command? then @command else dd.file
-
-    ##########
-    _make_cookie_tag: () =>
-        li = @proc.selected.profile.proc_id
-        lv = @proc.selected.profile.proc_version
-        return "sc-language-#{li}-#{lv}-options-with-title-#{@pattern_name}"
-
-    ##########
-    _search_titled_command: (item) =>
-        list_item = i for i in @ui.allowed_structured_command_line when i.title == item
-        # console.log "list_item", list_item
-        return list_item
-
-
-
-
-class Input extends ResultWithUIandCommandLine
-    constructor: (proc, default_val = null) ->
-        super(proc, new UIInfoWithCommandLine('run'), default_val)
-
-        @is_running = false
-
-        @stdin = if default_val?.stdin? then default_val.stdin else ""
-
-        if default_val?
-            @set_result(default_val.result, default_val)
-
-    reset: () =>
-        super
-        @ui.set_ui_label(null)
-
-    set_result: (result) =>
-        super(result)
-        @ui.set_ui_label(this)
-
-    running: () =>
-        @is_running = true
-
-    stopped: () =>
-        @is_running = false
-
-
-
-
-
-
-
-
-
-##########
-class CompileResult extends ResultWithUIandCommandLine
-    constructor: (proc) ->
-        super(proc, new UIInfoWithCommandLine('compile'))
-
-
-
-
-class LinkResult extends ResultWithUIandCommandLine
-    constructor: (proc) ->
-        super(proc, new UIInfoWithCommandLine('link'))
-        @proc = proc
-        @ui = new UIInfoWithCommandLine()
-
-
-
-
-
 # ==================================================
 # ==================================================
 # ==================================================
@@ -597,6 +342,7 @@ ProcGardenApp.controller(
         ########################################
         #
         $scope.force_set_ticket_tab_index = (ticket_index) =>
+            console.log(ticket_index)
             for ticket in $scope.tickets
                 ticket.tab_ui.inactivate()
             $scope.tickets[ticket_index].tab_ui.activate()
@@ -669,7 +415,7 @@ ProcGardenApp.controller(
                             alert("Error[1](please report): #{data.message}")
                             $scope.finish_ticket()
                         else
-                            $scope.wait_entry_for_update(data.entry_id, data.ticket_ids)
+                            $scope.wait_entry_for_update(data.entry_id)
                 .fail () =>
                     $rootScope.$apply () =>
                         alert("Failed[1]")
@@ -678,7 +424,7 @@ ProcGardenApp.controller(
 
         ########################################
         # phase 2
-        $scope.wait_entry_for_update = (entry_id, ticket_ids, with_init = false, set_source = false) =>
+        $scope.wait_entry_for_update = (entry_id, with_init = false) =>
             $scope.is_running = true
 
             $.get("/api/system/entry/#{entry_id}", "json")
@@ -688,6 +434,9 @@ ProcGardenApp.controller(
                             alert("Error[2](please report): #{data.message}")
                             $scope.finish_ticket()
                         else
+                            console.warn "phase 2 => ", data
+                            ticket_ids = data.ticket_ids
+
                             $scope.current_entry_id = entry_id
 
                             # make parmlink button
@@ -701,20 +450,19 @@ ProcGardenApp.controller(
                             if with_init
                                 # make tickets
                                 $scope.tickets = []
+                                console.log "ticket_ids", ticket_ids
                                 for i in [0...(ticket_ids.length)]
+                                    console.log("gobob=> ", ticket_ids)
                                     $scope.append_ticket()
                                 $scope.force_set_ticket_tab_index(0)
 
                                 # load source code
-                                if set_source
-                                    (new CodemirrorEditor).set_value(data.code.source)
-
-                                unless set_source
-                                    $scope.visibility = data.visibility
+                                $scope.visibility = data.entry.visibility
 
                             # console.log data.ticket.num
                             # apply for all tickets
                             ticket_ids.forEach((ticket_id) =>
+                                console.log "ticket_id => ", ticket_id
                                 # set processing flag
                                 # $scope.tickets[i].is_processing = true
                                 # make handler for get ticket data per ticket
@@ -730,7 +478,7 @@ ProcGardenApp.controller(
         ########################################
         # phase 3
         $scope.wait_ticket_for_update = (ticket_id, with_init = false, ticket_index = null) =>
-            console.log "get=>", ticket_id
+            console.log "wait_ticket_for_update=>", ticket_id
 
             submit_data = {
                 api_version: 1,
@@ -798,21 +546,27 @@ ProcGardenApp.controller(
 
         ########################################
         #
-        $scope.load_ticket_profile = (ticket_index, ticket_data) =>
-            language_id = ticket_data.language_id
-            language_proc_version = ticket_data.language_proc_version
+        $scope.load_ticket_profile = (ticket_index, ticket_model) =>
+            proc_id = ticket_model.proc_id
+            proc_version = ticket_model.proc_version
 
             ticket = $scope.tickets[ticket_index]
 
-            found_proc = p for p in $scope.procs when p.profile.proc_id == language_id && p.profile.proc_version == language_proc_version
+            console.log "loading", ticket
+
+            found_proc = p for p in $scope.procs when p.value.proc_id == proc_id && p.value.proc_version == proc_version
             unless found_proc?
+                # rest = $scope.procs.filter((p) => p.proc_id == proc_id)
+                # if rest.length == 0
+                #    console.log "completely not"
+                #console.log "proc was not found"
                 # the Proc of this ticket is already unsupported, so make a DUMMY proc profile
                 # Error....
                 # console.log "error... : found_proc?"
                 # make minimum details...
-                dummy_description = new ProcDescription({
+                dummy_description = new ProcGarden.ProcDescription({
                     Id: 0
-                    Name: if ticket_data.language_label? then ticket_data.language_label else "???",
+                    Name: if ticket_model.proc_label? then ticket_model.proc_label else "???",
                     Runnable: true,
                     Path: "???"
                 })
@@ -840,8 +594,12 @@ ProcGardenApp.controller(
                 })
 
                 found_proc = {
-                    value: "???",
-                    title: "#{detail.name}(unsupported in ProcGarden)",
+                    id: 0,
+                    value: {
+                        proc_id: profile.proc_id,
+                        proc_version: profile.proc_version
+                    }
+                    title: "#{profile.name}(unsupported in ProcGarden)",
                     group: "???",
                     profile: profile
                 }
@@ -849,50 +607,18 @@ ProcGardenApp.controller(
                 ticket.do_execution = true
 
             #
-            ticket.propagate_proc(found_proc)
+            ticket.change_proc(found_proc)
 
             # inputs number error correction
-            if ticket_data.inputs?
-                ticket.remap_inputs(ticket_data.inputs)
+            if ticket_model.run_states?
+                ticket.inputs = []
+                for i in ticket_model.run_states
+                    ticket.append_input()
 
             #
-            ticket.compile.update_allowed_command_line()
-            ticket.compile.generate_structured_command_line(ticket_data.compiletime_structured_command_line)
+            ticket.refresh_command_lines()
+            ticket.load_init_data_from_model(ticket_model)
 
-            #
-            #ticket.link.update_allowed_command_line()
-            #ticket.link.generate_structured_command_line(ticket_data.link_structured_command_line)
-
-            #
-            for input, index in ticket.inputs
-                input.update_allowed_command_line()
-                input.generate_structured_command_line(ticket_data.inputs[index].structured_command_line)
-
-
-
-        ########################################
-        # logics are same as RunnerNodeServers
-        #
-        $scope.make_compile_command_line = (ticket_index, is_readonly = false) =>
-            return $scope.tickets[ticket_index].compile.make_command_line_string(is_readonly)
-
-
-        $scope.make_link_command_line = (ticket_index, is_readonly = false) =>
-            ticket = $scope.tickets[ticket_index]
-            dd = ticket.proc.selected.profile.link
-            if dd.command?
-                structured_command_line =
-                    ticket.link.structured_command_line?.body
-                command_line = ''
-
-                command = [dd.command, options_to_s(structured_command_line), dd.fixed_command_line, escapeshell(command_line)].join(' ')
-                return command
-            else
-                return if ticket.link.command? then ticket.link.command else dd.file
-
-
-        $scope.make_run_command_line = (ticket_index, input_index, is_readonly = false) =>
-            return $scope.tickets[ticket_index].inputs[input_index].make_command_line_string(is_readonly)
 
         #
         $scope.dc = (num) =>

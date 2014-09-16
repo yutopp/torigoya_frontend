@@ -21,6 +21,17 @@ class Code
   field :file_id
   field :file_name, :type => String
   field :type, :type => Symbol  # :native, :gist
+
+  def source_code
+    return case self.type
+           when :native
+             g = Mongoid::GridFs.get(self.file_id)
+             g.data
+
+           else
+             raise NotSupported.new
+           end
+  end
 end
 
 
@@ -42,7 +53,7 @@ class Ticket
 
   embeds_one :compile_state
   embeds_one :link_state
-  embeds_many :run_states
+  embeds_many :run_states   # NOTE: NOT ordered by execution order
 end
 
 
@@ -59,7 +70,9 @@ class State
   field :status, :type => Integer
   field :system_error_message, :type => String
 
-  field :structured_command_line, :type => Hash
+  field :structured_command_line, :type => Array
+  field :cpu_time_sec_limit, :type => Float
+  field :memory_bytes_limit, :type => Integer
 
   field :out, :type => Array
   field :err, :type => Array

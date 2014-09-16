@@ -98,6 +98,7 @@ module ExecutionTaskWorker
     end # def add
   end # class Worker
 
+
   class RunFlow
     def self.run(ticket, model)
       Rails.logger.debug "RUN! RUN!"
@@ -117,7 +118,13 @@ module ExecutionTaskWorker
               # change phase
               model.phase = Phase::Compiling
               # create state info
-              memo[:compile][res.index] = CompileState.new(:index => res.index)
+              st = ticket.build_inst.compile_setting
+              sc = st.structured_command.map &:to_tuple
+              memo[:compile][res.index] = CompileState.new(:index => res.index,
+                                                           :structured_command_line => sc,
+                                                           :cpu_time_sec_limit => st.cpu_limit,
+                                                           :memory_bytes_limit => st.memory_limit
+                                                           )
               model.compile_state = memo[:compile][res.index]
             end
 
@@ -126,7 +133,13 @@ module ExecutionTaskWorker
               # change phase
               model.phase = Phase::Linking
               #
-              memo[:link][res.index] = LinkState.new(:index => res.index)
+              st = ticket.build_inst.link_setting
+              sc = st.structured_command.map &:to_tuple
+              memo[:link][res.index] = LinkState.new(:index => res.index,
+                                                     :structured_command_line => sc,
+                                                     :cpu_time_sec_limit => st.cpu_limit,
+                                                     :memory_bytes_limit => st.memory_limit
+                                                     )
               model.link_state = memo[:link][res.index]
             end
 
@@ -135,7 +148,13 @@ module ExecutionTaskWorker
               # change phase
               model.phase = Phase::Running
               #
-              memo[:run][res.index] = RunState.new(:index => res.index)
+              st = ticket.run_inst.inputs[res.index].run_setting
+              sc = st.structured_command.map &:to_tuple
+              memo[:run][res.index] = RunState.new(:index => res.index,
+                                                   :structured_command_line => sc,
+                                                   :cpu_time_sec_limit => st.cpu_limit,
+                                                   :memory_bytes_limit => st.memory_limit
+                                                   )
               model.run_states << memo[:run][res.index]
             end
           end

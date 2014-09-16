@@ -189,6 +189,18 @@ module Api
 
       #
       proc_table = Cages.get_proc_table()
+
+      # validate
+      tickets_info.each do |t|
+        unless proc_table.has_key?(t.proc_id)
+          raise "proc_id: #{t.proc_id} is not registered in this system."
+        end
+        unless proc_table[t.proc_id]['Versioned'].has_key?(t.proc_version)
+          raise "proc_version #{t.proc_version} is not registered in this system."
+        end
+      end
+
+      #
       language_tags = tickets_info.map do |t|
         if proc_table.has_key?(t.proc_id)
           next "#{proc_table[t.proc_id]['Description']['Name']}[#{t.proc_version}]"
@@ -200,6 +212,8 @@ module Api
 
       #
       tickets_info.each do |t|
+        label = "#{proc_table[t.proc_id]['Description']['Name']}[#{t.proc_version}]"
+
         if t.is_a?(ExecutableTicketInfo)
           # do execution
           model = entry.tickets.build(:index => t.index,
@@ -208,7 +222,7 @@ module Api
                                       :do_execute => true,
                                       :proc_id => t.proc_id,
                                       :proc_version => t.proc_version,
-                                      :proc_label => "",
+                                      :proc_label => label,
                                       :phase => Phase::Waiting
                                       )
           model.save!
@@ -224,7 +238,7 @@ module Api
                                       :do_execute => false,
                                       :proc_id => t.proc_id,
                                       :proc_version => t.proc_version,
-                                      :proc_label => "",
+                                      :proc_label => label,
                                       :phase => Phase::NotExecuted
                                       )
           model.save!
@@ -235,7 +249,6 @@ module Api
 
       return {
         :entry_id => entry.id.to_s,
-        :ticket_ids => entry.tickets.map {|t| t.id.to_s },
         :is_error => false
       }
     end

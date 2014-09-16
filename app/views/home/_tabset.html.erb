@@ -1,21 +1,22 @@
 <!-- tab set -->
-<% if @cloned_from_entry_id.nil? %>
+<% if entry_id.nil? %>
 <tabset ng-init="append_ticket()">
 <% else %>
-<tabset ng-init="wait_entry_for_update('<%= @cloned_from_entry_id %>', true, true)">
+<tabset ng-init="wait_entry_for_update('<%= entry_id %>', <%= with_init %>)">
 <% end %>
 
-    <!-- tab append button -->
-    <li class="sc-add-btn">
-        <button type="button"
-                class="btn btn-primary btn-xs"
-                ng-disabled="is_running"
-                ng-click="append_ticket()">
-            <span class="glyphicon glyphicon-plus"></span>
-        </button>
-    </li>
-    <!-- /tab append button -->
-
+    <% if entry_id.nil? %>
+        <!-- tab append button -->
+        <li class="sc-add-btn">
+            <button type="button"
+                    class="btn btn-primary btn-xs"
+                    ng-disabled="is_running"
+                    ng-click="append_ticket()">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </li>
+        <!-- /tab append button -->
+    <% end %>
 
     <!-- tab -->
     <tab ng-repeat="ticket in tickets"
@@ -34,10 +35,14 @@
             <div class="container-fluid has-no-extra-space">
                 <div class="row">
                     <div class="col-sm-6">
-                        <%= render :partial => "proc_part" %>
+                        <%= render :partial => "home/proc_part", :locals => {
+                            :readonly => readonly
+                        } %>
                     </div>
                     <div class="col-sm-6">
-                        <%= render :partial => "operator_container" %>
+                        <%= render :partial => "home/operator_container", :locals => {
+                            :readonly => readonly
+                        } %>
                     </div>
                 </div>
             </div>

@@ -1,36 +1,47 @@
 <!-- editor body -->
 <div class="row">
     <div class="col-sm-12">
-<% if false %>
-        <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
+        <% if source_codes.nil? %>
+            <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
 
 int main() {
     std::cout << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
 }</textarea>
-<% end %>
-        <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
-
-int main() {
-    for(int i=0; i<1024; ++i) {
-        std::cout << i << "=============================================== aaaaaaaaaaaaaaaaaaaaa ?????????????????????/" << std::endl;
-    }
-}</textarea>
+        <% else %>
+            <%# NOTE: source_codes is array... %>
+            <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor"><%= source_codes[0] %></textarea>
+        <% end %>
     </div>
 </div>
 <!-- /editor body -->
 
-<script type="text/javascript">
-    $(function() {
-        sc_setup_editor({
-            height: "280px",
-            extra_key: {
-                "Ctrl-Enter": (function() {
-                    var s = angular.element($("#sc-code-editor-ctrl")).scope();
-                    s.$apply(function () {
-                        s.submit_all();
-                    });
-                })
-            }
+<% if readonly != nil && readonly == true %>
+    <%# readonly %>
+
+    <script type="text/javascript">
+        $(function() {
+            sc_setup_editor({
+                readonly: true
+            });
+            $('#sc-code-editor').autosize();
         });
-    });
-</script>
+    </script>
+
+<% else %>
+    <%# normal %>
+    <script type="text/javascript">
+        $(function() {
+            sc_setup_editor({
+                height: "280px",
+                extra_key: {
+                    "Ctrl-Enter": (function() {
+                        var s = angular.element($("#sc-code-editor-ctrl")).scope();
+                        s.$apply(function () {
+                            s.submit_all();
+                        });
+                    })
+                }
+            });
+        });
+    </script>
+<% end %>
