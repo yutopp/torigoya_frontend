@@ -36,11 +36,11 @@
                                 <a href="/">Home</a>
                             </li>
 
-                            <% if false %>
-                            <li<% if params[:controller] == "entries" %> class="active"<% end %>>
+                            <li<% if navbar_entries? %> class="active"<% end %>>
                                 <a href="/entries">Entries</a>
                             </li>
 
+                            <% if false %>
                             <li<% if params[:controller] == "samples" %> class="active"<% end %>>
                                 <a href="/samples">Samples</a>
                             </li>

@@ -31,6 +31,14 @@ module Api
         @kit = kit        # TorigoyaKit::Ticket
       end
       attr_reader :index, :kit
+
+      def proc_id
+        return @kit.proc_id
+      end
+
+      def proc_version
+        return @kit.proc_version
+      end
     end
 
     class NoExecutableTicketInfo
@@ -180,6 +188,17 @@ module Api
       tickets_info = load_tickets_info(value, source_codes)
 
       #
+      proc_table = Cages.get_proc_table()
+      language_tags = tickets_info.map do |t|
+        if proc_table.has_key?(t.proc_id)
+          next "#{proc_table[t.proc_id]['Description']['Name']}[#{t.proc_version}]"
+        else
+          next nil
+        end
+      end
+      entry.language_tags = language_tags.compact.uniq
+
+      #
       tickets_info.each do |t|
         if t.is_a?(ExecutableTicketInfo)
           # do execution
@@ -187,8 +206,8 @@ module Api
                                       :is_running => true,
                                       :processed => false,
                                       :do_execute => true,
-                                      :proc_id => t.kit.proc_id,
-                                      :proc_version => t.kit.proc_version,
+                                      :proc_id => t.proc_id,
+                                      :proc_version => t.proc_version,
                                       :proc_label => "",
                                       :phase => Phase::Waiting
                                       )

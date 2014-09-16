@@ -7,6 +7,7 @@ class Entry
   field :visibility, :type => Integer
   has_many :codes
   has_many :tickets
+
   field :tags, :type => Array, :default => []
   field :language_tags, :type => Array, :default => []
   field :viewed_count, :type => Integer, :default => 0

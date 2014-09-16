@@ -3,6 +3,10 @@ module ApplicationHelper
     return params[:controller] == "home"
   end
 
+  def navbar_entries?
+    return params[:controller] == "entries"
+  end
+
   def navbar_about?
     return params[:controller] == "about"
   end
