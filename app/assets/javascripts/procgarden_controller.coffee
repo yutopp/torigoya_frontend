@@ -183,7 +183,6 @@ ProcGardenApp.controller(
         $scope.change_ticket_tab = (index) =>
             $scope.selected_tab_index = index
             $scope.selected_ticket = $scope.tickets[index]
-            console.log "change ticket tab => ", $scope.selected_ticket
 
 
         ########################################
@@ -194,7 +193,7 @@ ProcGardenApp.controller(
         $scope.change_input_tab = (index) =>
             $scope.selected_input_tab_index = index
             $scope.selected_input = $scope.selected_ticket.inputs[index]
-            console.log "change input tab => ", $scope.selected_input
+
 
         ########################################
         # change editor highlight by selected item
@@ -309,9 +308,6 @@ ProcGardenApp.controller(
             source_code = (new CodemirrorEditor).get_value()
             # console.log source_code
 
-            for ticket in $scope.tickets
-                console.log
-
             # !!!! construct POST data
             raw_submit_data = {
                 description: "",
@@ -371,7 +367,6 @@ ProcGardenApp.controller(
                             alert("Error[2](please report): #{data.message}")
                             $scope.finish_ticket()
                         else
-                            console.warn "phase 2 => ", data
                             ticket_ids = data.ticket_ids
 
                             $scope.current_entry_id = entry_id
