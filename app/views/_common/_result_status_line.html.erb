@@ -19,7 +19,7 @@
     <h6 tooltip="CPU"
         tooltip-append-to-body="true"
         tooltip-placement="bottom">
-        {{<%= obj %>.result.cpu.toFixed(4)}}/{{<%= obj %>.result.cpu_limit}}[sec]
+        {{<%= obj %>.result.get_cpu_string()}}[sec]
     </h6>
 </div>
 
@@ -27,6 +27,6 @@
     <h6 tooltip="Memory"
         tooltip-append-to-body="true"
         tooltip-placement="bottom">
-        {{mem_dc(<%= obj %>.result.memory)}}/{{mem_dc(<%= obj %>.result.memory_limit)}}[KB]
+        {{<%= obj %>.result.get_mem_string()}}[KB]
     </h6>
 </div>

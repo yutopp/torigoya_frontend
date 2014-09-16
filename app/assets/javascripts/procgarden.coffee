@@ -152,7 +152,6 @@ ProcGardenApp.controller(
         $scope.procs_group = {}
         $scope.create_proc_list()
 
-
         #
         $scope.submit_able = true
         $scope.is_running = false
@@ -177,25 +176,30 @@ ProcGardenApp.controller(
         $scope.tickets = []
 
         ########################################
-        #
+        # Tab index of Ticket
         $scope.selected_tab_index = 0
+        $scope.selected_ticket = null
 
         $scope.change_ticket_tab = (index) =>
             $scope.selected_tab_index = index
+            $scope.selected_ticket = $scope.tickets[index]
+            console.log "change ticket tab => ", $scope.selected_ticket
 
 
         ########################################
-        #
+        # Tab index of Inputs
         $scope.selected_input_tab_index = 0
+        $scope.selected_input = null
 
         $scope.change_input_tab = (index) =>
             $scope.selected_input_tab_index = index
-
+            $scope.selected_input = $scope.selected_ticket.inputs[index]
+            console.log "change input tab => ", $scope.selected_input
 
         ########################################
         # change editor highlight by selected item
-        $scope.$watchCollection(
-            'tickets[selected_tab_index].data.selected_proc_id',
+        $scope.$watch(
+            'selected_ticket.data.selected_proc_id',
             (new_id, old_id) =>
                 # console.log old_value, new_value
                 unless new_id?
@@ -206,9 +210,6 @@ ProcGardenApp.controller(
                 # new_proc: ProcGarden.Proc
                 new_proc = $scope.procs[new_id]
 
-                (new CodemirrorEditor).set_highlight(new_proc.title)
-                # console.log new_value
-                # console.log $scope.selected_tab_index
                 if $scope.do_save_cookie
                     $.cookie("sc-editor-cached-language-title", new_proc.title)
 
@@ -217,16 +218,17 @@ ProcGardenApp.controller(
                     return
                 old_proc = selected_ticket.current_proc
 
-                selected_ticket.change_proc(new_proc)
+                selected_ticket.change_proc(new_proc, false)
 
                 if new_proc.id != old_proc.id
+                    (new CodemirrorEditor).set_highlight(new_proc.title)
                     selected_ticket.refresh_command_lines()
         )
 
 
         #
         $scope.$watchCollection(
-            'tickets[selected_tab_index].compile.cmd_args.structured.selected_data',
+            'selected_ticket.compile.cmd_args.structured.selected_data',
             (new_value)=>
                 unless new_value?
                     return
@@ -237,7 +239,7 @@ ProcGardenApp.controller(
 
         #
         $scope.$watchCollection(
-            'tickets[selected_tab_index].link.cmd_args.structured.selected_data',
+            'selected_ticket.link.cmd_args.structured.selected_data',
             (new_value)=>
                 unless new_value?
                     return
@@ -248,41 +250,15 @@ ProcGardenApp.controller(
 
         #
         $scope.$watchCollection(
-            'tickets[selected_tab_index].inputs[selected_input_tab_index].cmd_args.structured.selected_data',
+            '$scope.selected_input.cmd_args.structured.selected_data',
             (new_value)=>
                 unless new_value?
                     return
 
-                ticket =  $scope.tickets[$scope.selected_tab_index]
+                ticket = $scope.tickets[$scope.selected_tab_index]
                 input = ticket.inputs[$scope.selected_input_tab_index]
                 input.cmd_args.structured.save($scope.do_save_cookie)
         )
-
-
-        ##########
-        $scope.select_default_language = () =>
-            try
-                if $.cookie("sc-editor-cached-language-title")?
-                    cached_proc_title = $.cookie("sc-editor-cached-language-title")
-                    found_index = null
-                    for proc, index in $scope.procs
-                        if cached_proc_title == proc.title
-                            found_index = index
-                            break
-                    if found_index?
-                        return $scope.procs[found_index]
-                    else
-                        throw "proc index not found"
-                else
-                    # set default...
-                    # find c++(gcc)
-                    default_proc = p for p in $scope.procs when p.profile.proc_id == 100 && p.profile.proc_version == "4.8.2"
-                    return default_proc ? $scope.procs[0]
-
-            catch error
-                return $scope.procs[0] # default value
-
-
 
         ########################################
         #
@@ -291,7 +267,7 @@ ProcGardenApp.controller(
                 ticket.tab_ui.inactivate()
 
             # type: ProcGarden.Proc
-            default_proc = $scope.select_default_language()
+            default_proc = ProcGarden.Procs.select_default($scope.procs)
 
             # ticket format
             ticket = new ProcGarden.Ticket(default_proc)
@@ -303,10 +279,10 @@ ProcGardenApp.controller(
         ########################################
         #
         $scope.force_set_ticket_tab_index = (ticket_index) =>
-            console.log(ticket_index)
             for ticket in $scope.tickets
                 ticket.tab_ui.inactivate()
             $scope.tickets[ticket_index].tab_ui.activate()
+            $scope.change_ticket_tab(ticket_index)
 
 
         ########################################
@@ -366,7 +342,7 @@ ProcGardenApp.controller(
                 type: "json",
                 value: JSON.stringify(raw_submit_data)
             }
-            console.log "submit => ", submit_data
+            # console.log "submit => ", submit_data
 
             # submit!
             $.post("/api/system/source", submit_data, "json")
@@ -406,14 +382,13 @@ ProcGardenApp.controller(
                             tweet_url = "https://platform.twitter.com/widgets/tweet_button.html?url=#{$scope.current_entry_target_url}&text=#{text}"
                             $scope.current_entry_tweet = $sce.trustAsResourceUrl(tweet_url)
 
-                            console.log "Entry Loaded: " + JSON.stringify(data)
+                            # console.log "Entry Loaded: " + JSON.stringify(data)
 
                             if with_init
                                 # make tickets
                                 $scope.tickets = []
-                                console.log "ticket_ids", ticket_ids
+                                # console.log "ticket_ids", ticket_ids
                                 for i in [0...(ticket_ids.length)]
-                                    console.log("gobob=> ", ticket_ids)
                                     $scope.append_ticket()
                                 $scope.force_set_ticket_tab_index(0)
 
@@ -423,7 +398,6 @@ ProcGardenApp.controller(
                             # console.log data.ticket.num
                             # apply for all tickets
                             ticket_ids.forEach((ticket_id) =>
-                                console.log "ticket_id => ", ticket_id
                                 # set processing flag
                                 # $scope.tickets[i].is_processing = true
                                 # make handler for get ticket data per ticket
@@ -439,7 +413,7 @@ ProcGardenApp.controller(
         ########################################
         # phase 3
         $scope.wait_ticket_for_update = (ticket_id, with_init = false, ticket_index = null) =>
-            console.log "wait_ticket_for_update=>", ticket_id
+            # console.log "wait_ticket_for_update=>", ticket_id
 
             submit_data = {
                 api_version: 1,
@@ -448,10 +422,9 @@ ProcGardenApp.controller(
             if ticket_index?
                 target_ticket = $scope.tickets[ticket_index]
                 raw_submit_data = target_ticket.recieved_until()
-                console.log "ababa=> ", raw_submit_data
                 submit_data.value = JSON.stringify(raw_submit_data)
 
-            console.log "submit => ", submit_data
+            # console.log "submit => ", submit_data
 
             $.get("/api/system/ticket/#{ticket_id}", submit_data, "json")
                 .done (data) =>
@@ -463,7 +436,7 @@ ProcGardenApp.controller(
                         else
                             ticket_model = data.ticket
                             ticket_index = ticket_model.index
-                            console.log "Ticket Loaded: " + JSON.stringify(ticket_model)
+                            # console.log "Ticket Loaded: " + JSON.stringify(ticket_model)
 
                             if with_init
                                 $scope.load_ticket_profile(ticket_index, ticket_model)
@@ -471,7 +444,7 @@ ProcGardenApp.controller(
                             #
                             $scope.tickets[ticket_index].update(ticket_model)
 
-                            console.log "ticket", ticket_index, ticket_model
+                            # console.log "ticket", ticket_index, ticket_model
 
                             if ticket_model["is_running"]
                                 # set processing flag
@@ -528,31 +501,13 @@ ProcGardenApp.controller(
             ticket.load_init_data_from_model(ticket_model)
 
 
-        #
-        $scope.dc = (num) =>
-            num.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')
 
-        $scope.mem_dc = (num) ->
-            $scope.dc(num/1024)
 
     ]
 )
 
 
 
-
-
-# ==================================================
-# ==================================================
-# ==================================================
-# ==================================================
-#
-ProcGardenApp.controller(
-    'Languages',
-    ['$scope', ($scope) =>
-        console.log JSON.stringify(gon.proc_table)
-    ]
-)
 
 
 

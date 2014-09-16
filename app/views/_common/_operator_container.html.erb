@@ -1,11 +1,11 @@
 <div class="container-fluid has-no-extra-space">
-   <!-- input -->
+    <!-- input -->
     <div class="row" ng-if="tickets[selected_tab_index].do_execution === true">
         <div class="col-sm-12">
             <tabset class="sc-input-tabset">
                 <tab ng-repeat="input in tickets[selected_tab_index].inputs"
                      active="input.ui.is_active_tab"
-                     select="change_input_tab(selected_tab_index)"
+                     select="change_input_tab($index)"
                      class="sc-ticket-input-tab"
                      >
 

@@ -28,19 +28,18 @@
             <img src="/assets/loading.gif" ng-if="ticket.is_processing"></img>
         </tab-heading>
 
-
         <!-- tab content -->
-        <div class="tab-pane">
+        <div class="tab-pane" ng-if="$index == selected_tab_index">
             <!-- language operation -->
             <div class="container-fluid has-no-extra-space">
                 <div class="row">
                     <div class="col-sm-6">
-                        <%= render :partial => "home/proc_part", :locals => {
+                        <%= render :partial => "_common/proc_part", :locals => {
                             :readonly => readonly
                         } %>
                     </div>
                     <div class="col-sm-6">
-                        <%= render :partial => "home/operator_container", :locals => {
+                        <%= render :partial => "_common/operator_container", :locals => {
                             :readonly => readonly
                         } %>
                     </div>

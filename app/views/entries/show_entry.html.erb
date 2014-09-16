@@ -1,114 +1,15 @@
-<div class="container">
-    <div class="row" ng-controller="EntryController" ng-init="mark_as_not_saving_cookie()">
-        <!-- sidebar container -->
-        <div class="col-sm-2" style="position:relative;">
-            <div class="well well-sm sc-sidebar affix" id="sc-navbar">
-                <ul class="nav nav-pills nav-stacked sc-nav">
-                    <li><a href="#source-code-row">Source Code</a></li>
-                    <li><a href="#tickets-row">Results</a></li>
-                </ul>
-            </div><!--/.well -->
-        </div><!--/span-->
-        <!-- /sidebar container -->
-
-        <!-- main container -->
-        <div class="col-sm-10" id="source-code-row">
-            <!-- editor container -->
-            <div class="row" ng-controller="SourceCodeEditor">
-                <div class="col-sm-12">
-                    <div class="well well-sm">
-                        <%= render :partial => '_common/editor_options' %>
-                        <%= render :partial => '_common/editor_core', :locals => {
-                            source_codes: @source_codes,
-                            readonly: true
-                        } %>
-                    </div>
-                </div>
-            </div>
-            <!-- /editor container -->
-
-
-            <!-- operator container -->
-            <div class="row" id="tickets-row">
-
-                <!-- tickets tabs -->
-                <div class="col-sm-10">
-                    <div class="well well-sm">
-                        <%= render :partial => 'home/tabset', :locals => {
-                            entry_id: @entry_id,
-                            with_init: true,
-                            readonly: true
-                        } %>
-                    </div>
-                </div>
-
-
-                <div class="col-sm-2">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <!-- clone -->
-                            <%= form_tag( '/home/index', :method => :post) do %>
-                                <input type='hidden'
-                                       id='entry_id'
-                                       name='entry_id'
-                                       value='<%= @entry_id %>'>
-                                <button type='submit'
-                                        class='btn btn-success'
-                                        style="width: 100%">
-                                    <strong>Clone!</strong>
-                                </button>
-                            <% end %>
-
-                            <h6>Visibility:</h6>
-                            <h6>
-                                <span class="glyphicon glyphicon-globe" ng-if="visibility == 0"></span>
-                                <span class="glyphicon glyphicon-eye-close" ng-if="visibility == 1"></span>
-                                <span class="glyphicon glyphicon-minus-sign" ng-if="visibility == 2"></span>
-                                <strong>{{['Public', 'Protected', 'Private'][visibility]}}</strong>
-                            </h6>
-<%#=@entry%>
-                            <% unless @entry['owner_user_id'].nil? %>
-                            <h6>Posted by:</h6>
-                            <h6>
-                                <% user = User.where( id: @entry['owner_user_id'] ).first %>
-                                <strong><%= user.name unless user.nil? %></strong>
-                            </h6>
-                            <% end %>
-
-                            <% unless @entry['created_at'].nil? %>
-                            <h6>Created at:</h6>
-                            <h6>
-                                <strong><%= @entry['created_at'] %></strong>
-                            </h6>
-                            <% end %>
-
-                            <div id="custom-tweet-button" ng-if="current_entry_id !== null">
-                                {{$sce.trustAsResourceUrl( 'https://platform.twitter.com/widgets/tweet_button.html&url=' + encodeURIComponent(current_entry_id) )}}
-
-                                <iframe allowtransparency="true"
-                                        frameborder="0"
-                                        scrolling="no"
-                                        data-url="http://abcdef"
-                                        data-text="abcde"
-                                        data-dnt="true"
-                                        ng-src="{{current_entry_tweet}}"
-                                        style="width:130px; height:20px;">
-                                </iframe>
-                            </div>
-
-                        <!-- /submit -->
-                        </div>
-                    </div>
-                </div>
-                <!-- /div-->
-            </div>
-            <!-- /operator container -->
-
+<div class="container-fluid ng-scope has-no-extra-space" ng-controller="EntryController">
+    <div class="row has-no-extra-space">
+        <!-- editor/input container -->
+        <div class="col-sm-11 has-no-extra-space">
+            <%= render :partial => 'main_container' %>
         </div>
-        <!-- main container -->
+        <!-- /editor/input container -->
 
-        <%#== get_supported_proc_list_by_json %>
-
+        <!-- mini container -->
+        <div class="col-sm-1 has-no-extra-space">
+            <%= render :partial => 'sub_container' %>
+        </div>
+        <!-- /mini container -->
     </div>
 </div>
-<%# ...form end... %>

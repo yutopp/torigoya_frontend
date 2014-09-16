@@ -10,6 +10,14 @@ module ProcGarden {
         }
     }
 
+    function dc(num: number): string {
+        return num.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+    }
+
+    function mem_dc(num: number): string {
+        return dc(num/1024);
+    }
+
     export module Model {
         export interface Ticket {
             index: number;
@@ -107,7 +115,38 @@ module ProcGarden {
         }
 
         export function select_default(procs: Array<Proc>): Proc {
-            return null;
+            try {
+                if ( $.cookie("sc-editor-cached-language-title") != null ) {
+                    var cached_proc_title = <string>$.cookie("sc-editor-cached-language-title");
+                    var found_index: number = null
+                    procs.forEach((proc: Proc, index: number) => {
+                        if ( found_index == null ) {
+                            if ( cached_proc_title == proc.title ) {
+                                found_index = index;
+                            }
+                        }
+                    });
+                    if ( found_index != null ) {
+                        return procs[found_index];
+                    } else {
+                        throw "proc index not found";
+                    }
+
+                } else {
+                    // set default...
+                    // find c++(gcc)
+                    var match = procs.filter((p) => {
+                        return p.value.proc_id == 100 && p.value.proc_version == "4.9.1";
+                    });
+                    if ( match.length != 0 ) {
+                        return match[0];
+                    }
+
+                    throw "proc index not found";
+                }
+            } catch(error) {
+                return procs[0];    // default value
+            }
         }
 
         export function fallback(
@@ -348,6 +387,14 @@ module ProcGarden {
             if ( result.err_until != null ) {
                 this.stderr_recieved_line = result.err_until;
             }
+        }
+
+        public get_cpu_string(): string {
+            return ""+this.cpu.toFixed(4)+'/'+this.cpu_limit;
+        }
+
+        public get_mem_string(): string {
+            return mem_dc(this.memory)+'/'+mem_dc(this.memory_limit);
         }
 
         public status: number;
@@ -632,8 +679,11 @@ module ProcGarden {
             }
         }
 
-        public change_proc(new_proc: Proc) {
+        public change_proc(new_proc: Proc, update_id: boolean = true) {
             this.current_proc = new_proc;
+            if ( update_id ) {
+                this.data.selected_proc_id = new_proc.id;
+            }
 
             this.compile.change_proc(this.current_proc);
             this.link.change_proc(this.current_proc);
