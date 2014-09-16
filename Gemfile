@@ -25,6 +25,7 @@ gem 'angular-ui-bootstrap-rails'
 
 #
 gem 'rails-assets-jquery'
+gem 'rails-assets-jquery-ujs'
 gem 'rails-assets-jquery-cookie'
 gem 'rails-assets-jquery-ui'
 gem 'rails-assets-jquery-autosize'

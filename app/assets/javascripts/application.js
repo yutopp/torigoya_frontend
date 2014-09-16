@@ -11,6 +11,7 @@
 // about supported directives.
 //
 //= require jquery
+//= require jquery-ujs
 //= require jquery-cookie
 //= require jquery-autosize
 //= require jquery-ui

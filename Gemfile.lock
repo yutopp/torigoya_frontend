@@ -60,7 +60,7 @@ GIT
 
 GIT
   remote: git://github.com/yutopp/typescript-rails.git
-  revision: 1782de981893549cdbc7414103325deb4c0954ba
+  revision: 8072b7d4560db71637bb990c1ad922000faba73f
   specs:
     typescript-rails (0.4.1)
       railties
@@ -162,7 +162,7 @@ GEM
     less-rails (2.5.0)
       actionpack (>= 3.1)
       less (~> 2.5.0)
-    libv8 (3.16.14.5)
+    libv8 (3.16.14.7)
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
@@ -233,6 +233,8 @@ GEM
       rails-assets-jquery (>= 1.2)
     rails-assets-jquery-ui (1.11.1)
       rails-assets-jquery (>= 1.6)
+    rails-assets-jquery-ujs (1.0.1)
+      rails-assets-jquery (> 1.8)
     rails-assets-select2 (3.5.1)
       rails-assets-jquery (>= 1.7.1)
     railties (4.1.4)
@@ -330,6 +332,7 @@ DEPENDENCIES
   rails-assets-jquery-autosize
   rails-assets-jquery-cookie
   rails-assets-jquery-ui
+  rails-assets-jquery-ujs
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)
   spring
