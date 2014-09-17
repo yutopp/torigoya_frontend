@@ -6,7 +6,7 @@ module Cages
   def get_proc_table(platform = :linux)
     h = ProcTableHolder.instance
     unless h.cached?
-      update_proc_table(platform)
+      load_proc_table_from_db(platform)
     end
 
     return h.table
