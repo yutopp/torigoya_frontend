@@ -17,6 +17,7 @@ vendor
 /tmp
 
 .env
+.frontend_version
 config/mongoid.yml
 config/deploy.rb
 config/deploy/
