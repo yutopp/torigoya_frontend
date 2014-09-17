@@ -188,7 +188,7 @@ class ApiController < ApplicationController
         raise "invalid offset[err]"
       end
       range = state["err"][from...to] # [from, to)
-      state["err"] = Base64.strict_encode64(state["err"].inject(""){|all, s| all + s.data})
+      state["err"] = Base64.strict_encode64(range.inject(""){|all, s| all + s.data})
       state["err_until"] = to
     end
 
