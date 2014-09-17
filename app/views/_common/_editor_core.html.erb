@@ -2,11 +2,7 @@
 <div class="row">
     <div class="col-sm-12">
         <% if source_codes.nil? %>
-            <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor">#include <iostream>
-
-int main() {
-    std::cout << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
-}</textarea>
+            <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor"></textarea>
         <% else %>
             <%# NOTE: source_codes is array... %>
             <textarea id="sc-code-editor" name="sc-code-editor" class="sc-normal-editor"><%= source_codes[0] %></textarea>
