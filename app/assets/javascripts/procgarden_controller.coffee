@@ -832,17 +832,3 @@ class CodemirrorEditor
 @sc_setup_editor = (option = {}) ->
     window.torigoya = {}
     new CodemirrorEditor(option)
-
-
-options_to_s = (options) =>
-    return "" unless options?
-
-    memo = []
-    for option in options
-        for key, value of option
-            memo.push "#{key}#{if value? then value else ''}" # space required
-
-    return memo.join(' ')
-
-escapeshell = (cmd) =>
-    return if cmd?.length > 0 then "\"" + cmd.replace(/(["\s'$`\\])/g,'\\$1') + "\"" else ""
