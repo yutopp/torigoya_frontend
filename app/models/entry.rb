@@ -22,8 +22,8 @@ class Code
   field :file_name, :type => String
   field :type, :type => Symbol  # :native, :gist
 
-  def source_code
-    return case self.type
+  def source_code(encoding = :utf8)
+    code = case self.type
            when :native
              g = Mongoid::GridFs.get(self.file_id)
              g.data
@@ -31,6 +31,13 @@ class Code
            else
              raise NotSupported.new
            end
+
+    case encoding
+    when :utf8
+      code.force_encoding('utf-8')
+    end
+
+    return code
   end
 end
 
