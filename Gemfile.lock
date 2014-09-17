@@ -60,7 +60,7 @@ GIT
 
 GIT
   remote: git://github.com/yutopp/typescript-rails.git
-  revision: 8072b7d4560db71637bb990c1ad922000faba73f
+  revision: 95d55595e5e00bcbdb1fdce2305cfa53b83ac0fc
   specs:
     typescript-rails (0.4.1)
       railties
