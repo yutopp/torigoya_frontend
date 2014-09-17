@@ -47,4 +47,8 @@ Rails.application.routes.draw do
   match '/404', to: 'application#error_404', via: :all
   match '/422', to: 'application#error_422', via: :all
   match '/50x', to: 'application#error_50x', via: :all
+
+  unless Rails.env.development?
+    match "/*path", to: 'application#error_404', via: :all
+  end
 end

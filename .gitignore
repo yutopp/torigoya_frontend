@@ -20,3 +20,5 @@ vendor
 config/mongoid.yml
 config/deploy.rb
 config/deploy/
+
+d.sh
