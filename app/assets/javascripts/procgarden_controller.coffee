@@ -599,6 +599,8 @@ class CodemirrorEditor
                 { mime: "text/javascript", mode: "javascript" }
             else if (/^java/i.test(language_title))
                 { mime: "text/x-java", mode: "clike" }
+            else if (/^ruby/i.test(language_title))
+                { mime: "text/x-ruby", mode: "ruby" }
             else if (/^ocaml/i.test(language_title))
                 { mime: "text/x-ocaml", mode: "mllike" }
             else if (/^d/i.test(language_title))
