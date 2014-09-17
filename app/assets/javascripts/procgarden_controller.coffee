@@ -208,6 +208,7 @@ ProcGardenApp.controller(
 
                 # new_proc: ProcGarden.Proc
                 new_proc = $scope.procs[new_id]
+                (new CodemirrorEditor).set_highlight(new_proc.title)
 
                 if $scope.do_save_cookie
                     $.cookie("sc-editor-cached-language-title", new_proc.title)
@@ -220,7 +221,6 @@ ProcGardenApp.controller(
                 selected_ticket.change_proc(new_proc, false)
 
                 if new_proc.id != old_proc.id
-                    (new CodemirrorEditor).set_highlight(new_proc.title)
                     selected_ticket.refresh_command_lines()
         )
 
