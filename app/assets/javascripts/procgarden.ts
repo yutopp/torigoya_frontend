@@ -727,14 +727,6 @@ module ProcGarden {
             });
         }
 
-        private apply_to_all<T>(f: (s: Section) => T) {
-            f.call(this.compile);
-            f(this.link);
-            this.inputs.forEach((input: Input) => {
-                f(input);
-            });
-        }
-
         public tab_ui: ActiveTabUI = new ActiveTabUI();
         public phase_ui: PhaseLabelUI = new PhaseLabelUI();
 
