@@ -1,7 +1,7 @@
 <div class="container-fluid has-no-extra-space">
     <div class="row sc-lang-op-row">
-        <div class="col-sm-5">
-            <% unless readonly %>
+        <% unless readonly %>
+            <div class="col-sm-6">
                 <%# language list %>
                 <select ui-select2
                         ng-model="ticket.data.selected_proc_id"
@@ -13,7 +13,10 @@
                         </option>
                     </optgroup>
                 </select>
-            <% else %>
+            </div>
+
+        <% else %>
+            <div class="col-sm-10">
                 <code>
                     <strong ng-if="ticket.fallback == null">
                         {{ticket.current_proc.title}}
@@ -22,19 +25,20 @@
                         {{ticket.fallback.title}}({{ticket.fallback.message}})
                     </strong>
                 </code>
-            <% end %>
-        </div>
+            </div>
+        <% end %>
 
-        <div class='col-sm-4'>
-            <% unless readonly %>
+
+        <% unless readonly %>
+            <div class='col-sm-4'>
                 <div ng-if="ticket.current_proc.profile.is_runnable === true">
                     <input type='checkbox'
                            ng-model="ticket.do_execution">
                     exec?
                     </input>
                 </div>
-            <% end %>
-        </div>
+            </div>
+        <% end %>
 
         <div class='col-sm-2 text-right'>
             <span class="label"
