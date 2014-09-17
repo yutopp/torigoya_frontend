@@ -43,4 +43,8 @@ Rails.application.routes.draw do
 
   #
   match '/feedback/send' => 'feedback#send_mail', :via => :post
+
+  match '/404', to: 'application#error_404', via: :all
+  match '/422', to: 'application#error_422', via: :all
+  match '/50x', to: 'application#error_50x', via: :all
 end
