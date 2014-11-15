@@ -372,7 +372,7 @@ ProcGardenApp.controller(
                             $scope.current_entry_id = entry_id
 
                             # make parmlink button
-                            $scope.current_entry_target_url = "http://test.sc.yutopp.net/entries/#{$scope.current_entry_id}"
+                            $scope.current_entry_target_url = "http://sc.yutopp.net/entries/#{$scope.current_entry_id}"
                             text = "[ProcGarden]⊂二二二（ ◔⊖◔）二⊃"
                             tweet_url = "https://platform.twitter.com/widgets/tweet_button.html?url=#{$scope.current_entry_target_url}&text=#{text}"
                             $scope.current_entry_tweet = $sce.trustAsResourceUrl(tweet_url)
