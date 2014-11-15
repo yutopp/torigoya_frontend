@@ -52,7 +52,7 @@
 
                             <% if can? :manage, :all %>
                                 <li<% if navbar_master? %> class="active"<% end %>>
-                                    <a href="/master">ControlPanel</a>
+                                    <a href="/master"><span class="glyphicon glyphicon-wrench"></span></a>
                                 </li>
                             <% end %>
                         </ul>
@@ -61,7 +61,7 @@
                             <% if user_signed_in? %>
                                 <li<% if navbar_user? %> class="active"<% end %>>
                                     <%= link_to "/users", {} do %>
-                                        <span class="glyphicon glyphicon-th"></span> Logged in as <%= current_user.name %>
+                                        <span class="glyphicon glyphicon-th"></span> Account
                                     <% end %>
                                 </li>
                             <% end %>
