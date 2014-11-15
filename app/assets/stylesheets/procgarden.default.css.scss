@@ -34,6 +34,7 @@ html {
     position: relative;
     min-height: 100%;
 }
+
 body {
     margin: 0;
     padding: 0;
@@ -313,7 +314,6 @@ body {
 
     .logo {
         margin-top: -4px;
-        width: ($navbar-height - 4px);
         height: ($navbar-height - 4px);
     }
 
